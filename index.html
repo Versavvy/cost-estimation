@@ -182,12 +182,23 @@
     <div class="controls">
 
       <div class="card">
-        <h2><span class="num">1</span> Volume &amp; question mix</h2>
-        <p class="hint">How many homework sessions you run, and what kind of questions they are.</p>
+        <h2><span class="num">1</span> Users &amp; volume</h2>
+        <p class="hint">One <em>session</em> is a single student taking one question through the full
+        flow (upload → walkthrough → complete). Total monthly sessions = users × sessions per user.</p>
 
         <div class="ctrl">
-          <label><span class="lbl">Homework sessions / month<small>one full upload→walkthrough→complete flow</small></span><span class="v" id="vSessions">1,000</span></label>
-          <input type="range" id="sessions" min="50" max="50000" step="50" value="1000">
+          <label><span class="lbl">Active users / month<small>distinct students using Homework Help</small></span><span class="v" id="vUsers">250</span></label>
+          <input type="range" id="users" min="1" max="20000" step="1" value="250">
+        </div>
+
+        <div class="ctrl">
+          <label><span class="lbl">Sessions per user / month<small>how many questions one student brings</small></span><span class="v" id="vSpu">4</span></label>
+          <input type="range" id="spu" min="1" max="40" step="1" value="4">
+        </div>
+
+        <div class="toggle-row" style="margin:2px 0 18px">
+          <span style="font-size:13px;color:var(--ink-dim)">Total sessions / month</span>
+          <span class="v" id="vSessions" style="font-size:14px">1,000</span>
         </div>
 
         <div class="ctrl">
@@ -302,6 +313,17 @@
             <div class="m-big">$<span id="perYear">0</span></div>
             <div class="m-lab">per year</div>
           </div>
+        </div>
+      </div>
+
+      <div class="scen">
+        <div class="s">
+          <div class="t">One session · 1 user, 1 question</div>
+          <div class="c" id="uOne" style="color:var(--accent)">$0</div>
+        </div>
+        <div class="s">
+          <div class="t">Per user / month · ×<span id="uSpu">4</span> sessions</div>
+          <div class="c" id="uMonth" style="color:var(--accent-2)">$0</div>
         </div>
       </div>
 
@@ -437,7 +459,9 @@ const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0}
 // state object pulled from inputs
 function readState(){
   const s = {
-    sessions:  +$("sessions").value,
+    users:     +$("users").value,
+    spu:       +$("spu").value,
+    sessions:  +$("users").value * +$("spu").value,
     pctCalc:   +$("pctCalc").value/100,
     pctText:   +$("pctText").value,
     pctImage:  +$("pctImage").value,
@@ -565,6 +589,9 @@ function render(){
   const r = compute(s);
 
   // value labels
+  $("vUsers").textContent = s.users.toLocaleString("en-US");
+  $("vSpu").textContent   = s.spu;
+  $("uSpu").textContent   = s.spu;
   $("vSessions").textContent = s.sessions.toLocaleString("en-US");
   $("mSessions").textContent = s.sessions.toLocaleString("en-US");
   $("vCalc").textContent  = (+$("pctCalc").value)+"%";
@@ -594,6 +621,10 @@ function render(){
   $("perYear").textContent    = money(r.perSession*s.sessions*12);
   $("sCalc").textContent      = fmt(r.calcSession,3);
   $("sExpl").textContent      = fmt(r.explSession,3);
+
+  // per-user view
+  $("uOne").textContent   = "$"+fmt(r.perSession,3);
+  $("uMonth").textContent = "$"+money(r.perSession*s.spu);
 
   // audio control visibility + note
   $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
@@ -650,7 +681,7 @@ function render(){
 }
 
 // ── presets ──────────────────────────────────────────────────────────────────
-const DEFAULTS = {sessions:1000,pctCalc:50,pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
+const DEFAULTS = {users:250,spu:4,pctCalc:50,pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
   avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsStep:220,charsExp:320,charsOv:400,charsFb:220,
   o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.067,tts_char:25};
 
@@ -662,9 +693,9 @@ function applyPreset(p){
   render();
 }
 $("btnReset").onclick = ()=>applyPreset(DEFAULTS);
-$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, sessions:200, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
+$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, users:50, spu:4, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
   avgSteps:4, avgAtt:2, avgAsk:0, charsStep:180, charsOv:300});
-$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, sessions:20000, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
+$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, users:2500, spu:8, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
   pctDiagram:70, avgSteps:7, retry:140, avgAtt:5, avgAsk:3, charsStep:300, charsExp:500, charsOv:600, charsFb:300});
 
 // bind every input

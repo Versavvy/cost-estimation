@@ -74,10 +74,14 @@ cost of that journey.
 
 ## The dials, explained one by one
 
-### Section 1 — Volume & question mix
+### Section 1 — Users & volume
 
-- **Homework sessions / month** — simply how many times students use the feature in a month.
-  More sessions = bigger monthly bill. (Doesn't change the *per-session* cost.)
+- **Active users / month** — how many distinct students use Homework Help in a month.
+- **Sessions per user / month** — how many questions an average student brings. One *session* =
+  one student taking one question through the whole flow (upload → walkthrough → complete).
+- **Total sessions / month** (shown, not a slider) — the two multiplied together. This is the real
+  volume driver: more users *or* more sessions each = a bigger monthly bill. (Neither changes the
+  *per-session* cost — that's set by the dials further down.)
 
 - **Calculation questions (%)** — out of all questions, how many are "work-it-out" maths/science
   problems versus "explain/write" essay ones.
@@ -139,10 +143,16 @@ cost of that journey.
 ## Reading the results (right-hand side)
 
 - **Big number ($ per session)** — the headline: average cost of one student's full session,
-  blending everything together.
+  blending everything together. This *is* "the cost of one user going through a homework session."
 
 - **Per month / Per year** — that headline multiplied by how many sessions you run. This is the
   number that matters for budgeting.
+
+- **Per user** (the two cards just below) —
+  - *One session · 1 user, 1 question* — same as the headline, restated: what a single trip
+    through the flow costs.
+  - *Per user / month* — that single-session cost multiplied by the "sessions per user" slider, i.e.
+    what one student costs you over a whole month. Slide *sessions per user* up and watch it climb.
 
 - **Calculation session vs Explanation session** — two example price tags side by side:
   - A pure *calculation* session (uses the pricey deep thinker) — usually noticeably more.
