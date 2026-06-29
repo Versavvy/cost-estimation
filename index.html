@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClevStudy · Homework Flow Cost Estimator</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel-2:#1c232d; --line:#283341;
+    --ink:#e6edf3; --ink-dim:#9aa7b4; --ink-faint:#6b7888;
+    --accent:#5ec8ff; --accent-2:#8b7cff;
+    --o3:#ff9e64; --gpt:#5ec8ff; --gemini:#a6e22e; --inworld:#ff79c6; --free:#6b7888;
+    --good:#3fb950; --warn:#d29922;
+    --radius:14px; --radius-sm:9px;
+    --mono:"SF Mono",ui-monospace,"Cascadia Code","Consolas",monospace;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1280px;margin:0 auto;padding:28px 24px 80px}
+
+  header.hero{margin-bottom:24px}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);
+    font-weight:600;margin-bottom:8px}
+  h1{font-size:28px;line-height:1.15;margin:0 0 8px;font-weight:700;letter-spacing:-.02em}
+  .sub{color:var(--ink-dim);max-width:760px;font-size:14.5px}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .pill{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink-dim);font-family:var(--mono);display:flex;align-items:center;gap:7px}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .dot.o3{background:var(--o3)} .dot.gpt{background:var(--gpt)}
+  .dot.gemini{background:var(--gemini)} .dot.inworld{background:var(--inworld)} .dot.free{background:var(--free)}
+
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:22px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 20px 18px;margin-bottom:18px}
+  .card h2{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-dim);
+    margin:0 0 4px;font-weight:600;display:flex;align-items:center;gap:9px}
+  .card h2 .num{width:22px;height:22px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:11px;color:var(--accent);font-family:var(--mono)}
+  .card .hint{color:var(--ink-faint);font-size:12.5px;margin:2px 0 16px}
+
+  .ctrl{margin-bottom:17px}
+  .ctrl:last-child{margin-bottom:0}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    font-size:13.5px;margin-bottom:7px;color:var(--ink)}
+  .ctrl label .v{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;
+    background:var(--panel-2);padding:2px 8px;border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+  .ctrl label .lbl small{display:block;color:var(--ink-faint);font-size:11.5px;font-weight:400;margin-top:1px}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;
+    background:linear-gradient(90deg,var(--accent) var(--p,50%),var(--line) var(--p,50%));outline:none;margin:2px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;
+    background:#fff;border:3px solid var(--accent);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;
+    border:3px solid var(--accent);cursor:pointer}
+  input[type=number]{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:13px}
+  input[type=number]:focus{outline:none;border-color:var(--accent)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:520px){.grid2{grid-template-columns:1fr}}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 12px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius-sm)}
+  .switch{position:relative;width:42px;height:23px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:var(--line);border-radius:999px;cursor:pointer;transition:.2s}
+  .slider:before{content:"";position:absolute;width:17px;height:17px;left:3px;top:3px;background:#fff;
+    border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--good)}
+  .switch input:checked + .slider:before{transform:translateX(19px)}
+
+  /* sticky results */
+  .results{position:sticky;top:18px}
+  .total-card{background:linear-gradient(150deg,#1b2a3a,#161b22);border:1px solid #2b4357;
+    border-radius:var(--radius);padding:22px;margin-bottom:18px}
+  .total-card .big{font-size:40px;font-weight:750;letter-spacing:-.02em;line-height:1;font-family:var(--mono)}
+  .total-card .big .cur{font-size:22px;color:var(--ink-dim);vertical-align:6px;margin-right:2px}
+  .total-card .lab{color:var(--ink-dim);font-size:12.5px;margin-top:6px;letter-spacing:.02em}
+  .total-card .month{margin-top:16px;padding-top:15px;border-top:1px solid #2b4357;display:flex;
+    justify-content:space-between;align-items:flex-end}
+  .total-card .month .m-big{font-size:24px;font-weight:700;font-family:var(--mono)}
+  .total-card .month .m-lab{color:var(--ink-dim);font-size:12px}
+
+  .scen{display:flex;gap:10px;margin-bottom:18px}
+  .scen .s{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:12px 13px}
+  .scen .s .t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:5px}
+  .scen .s .c{font-size:19px;font-weight:700;font-family:var(--mono)}
+  .scen .s.calc .c{color:var(--o3)} .scen .s.expl .c{color:var(--gpt)}
+
+  .bars h3,.phase h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);
+    margin:0 0 12px;font-weight:600}
+  .bar{margin-bottom:13px}
+  .bar .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .bar .top .name{display:flex;align-items:center;gap:8px;color:var(--ink)}
+  .bar .top .amt{font-family:var(--mono);color:var(--ink-dim);font-size:12.5px}
+  .bar .track{height:8px;border-radius:5px;background:var(--panel-2);overflow:hidden}
+  .bar .fill{height:100%;border-radius:5px;transition:width .25s ease}
+  .fill.o3{background:var(--o3)} .fill.gpt{background:var(--gpt)}
+  .fill.gemini{background:var(--gemini)} .fill.inworld{background:var(--inworld)} .fill.free{background:var(--free)}
+
+  table.breakdown{width:100%;border-collapse:collapse;font-size:13px}
+  table.breakdown th{text-align:left;color:var(--ink-faint);font-weight:600;font-size:11px;
+    text-transform:uppercase;letter-spacing:.04em;padding:0 8px 9px;border-bottom:1px solid var(--line)}
+  table.breakdown th.r,table.breakdown td.r{text-align:right}
+  table.breakdown td{padding:8px;border-bottom:1px solid var(--panel-2);font-family:var(--mono);font-size:12.5px}
+  table.breakdown td.lbl{font-family:var(--sans);color:var(--ink-dim)}
+  table.breakdown tr:last-child td{border-bottom:none}
+  table.breakdown .svc{display:inline-block;font-size:10px;padding:1px 6px;border-radius:5px;
+    border:1px solid var(--line);color:var(--ink-dim);margin-left:6px;font-family:var(--mono)}
+
+  details.adv{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:18px}
+  details.adv>summary{cursor:pointer;padding:16px 20px;font-size:13px;font-weight:600;color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:.04em;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details.adv>summary::-webkit-details-marker{display:none}
+  details.adv>summary .chev{transition:.2s;color:var(--ink-faint)}
+  details.adv[open]>summary .chev{transform:rotate(180deg)}
+  .adv-body{padding:0 20px 20px}
+  table.assump{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.assump th{text-align:left;color:var(--ink-faint);font-weight:600;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.04em;padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.assump th.r{text-align:right}
+  table.assump td{padding:5px 8px;border-bottom:1px solid var(--panel-2);vertical-align:middle}
+  table.assump td.r{text-align:right}
+  table.assump input{width:78px;padding:4px 6px;text-align:right;font-size:12px}
+  table.assump td.nm{font-family:var(--sans);color:var(--ink-dim)}
+  table.assump .mtag{font-size:10px;font-family:var(--mono);padding:1px 5px;border-radius:4px;color:#0e1116;font-weight:700}
+  .mtag.o3{background:var(--o3)} .mtag.gpt{background:var(--gpt)}
+
+  .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.price-grid{grid-template-columns:1fr}}
+  .price-cell{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 12px}
+  .price-cell .pt{font-size:12px;color:var(--ink);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .price-cell .pr{display:flex;gap:8px}
+  .price-cell .pr label{flex:1;font-size:10.5px;color:var(--ink-faint)}
+  .price-cell .pr label span{display:block;margin-bottom:3px}
+
+  .note{font-size:12px;color:var(--ink-faint);margin-top:6px;line-height:1.55}
+  .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .btn{background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);border-radius:8px;
+    padding:8px 14px;font-size:12.5px;cursor:pointer;font-family:var(--sans);transition:.15s}
+  .btn:hover{border-color:var(--accent);color:var(--ink)}
+  footer{margin-top:34px;color:var(--ink-faint);font-size:12px;border-top:1px solid var(--line);padding-top:18px}
+  .warnbox{display:none;background:rgba(210,153,34,.12);border:1px solid var(--warn);border-radius:9px;
+    padding:9px 12px;font-size:12px;color:var(--warn);margin-bottom:14px}
+  .warnbox.show{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">ClevStudy Tutor Engine · Tier 2</div>
+    <h1>Homework Help — Cost Estimator</h1>
+    <p class="sub">An interactive model of the per-session and monthly cost of the <strong>homework flow only</strong>.
+    Adjust the volume, question mix, walkthrough depth, interaction and audio assumptions on the left; the
+    breakdown by service and phase updates live. Every token count and unit price is editable under
+    <em>Advanced assumptions</em> — defaults are best-effort and should be tuned to your real provider contracts.</p>
+    <div class="pill-row">
+      <span class="pill"><span class="dot o3"></span> o3 — reasoning (calculation walkthroughs)</span>
+      <span class="pill"><span class="dot gpt"></span> gpt-4.1 — prose, extraction &amp; classification</span>
+      <span class="pill"><span class="dot gemini"></span> Gemini 3.1 Flash Image — diagram visuals</span>
+      <span class="pill"><span class="dot inworld"></span> Inworld TTS-2 — audio</span>
+      <span class="pill"><span class="dot free"></span> omni-moderation — free</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn" id="btnReset">↺ Reset to defaults</button>
+    <button class="btn" id="btnLow">Light usage preset</button>
+    <button class="btn" id="btnHeavy">Heavy usage preset</button>
+  </div>
+
+  <div class="layout">
+
+    <!-- ============ CONTROLS ============ -->
+    <div class="controls">
+
+      <div class="card">
+        <h2><span class="num">1</span> Volume &amp; question mix</h2>
+        <p class="hint">How many homework sessions you run, and what kind of questions they are.</p>
+
+        <div class="ctrl">
+          <label><span class="lbl">Homework sessions / month<small>one full upload→walkthrough→complete flow</small></span><span class="v" id="vSessions">1,000</span></label>
+          <input type="range" id="sessions" min="50" max="50000" step="50" value="1000">
+        </div>
+
+        <div class="ctrl">
+          <label><span class="lbl">Calculation questions<small>route to o3 · the rest are explanation → gpt-4.1</small></span><span class="v" id="vCalc">50%</span></label>
+          <input type="range" id="pctCalc" min="0" max="100" step="5" value="50">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">2</span> How questions arrive</h2>
+        <p class="hint">Typed text needs no extraction call. Image / document uploads each cost one GPT-4.1
+        extraction pass; uploads that contain a real diagram also trigger one Gemini image.</p>
+
+        <div class="ctrl">
+          <label><span class="lbl">Typed text entry<small>no extraction LLM call</small></span><span class="v" id="vText">60%</span></label>
+          <input type="range" id="pctText" min="0" max="100" step="5" value="60">
+        </div>
+        <div class="ctrl">
+          <label><span class="lbl">Photo / image upload<small>GPT-4.1 vision extraction</small></span><span class="v" id="vImage">30%</span></label>
+          <input type="range" id="pctImage" min="0" max="100" step="5" value="30">
+        </div>
+        <div class="ctrl">
+          <label><span class="lbl">PDF / Word document<small>GPT-4.1 text cleanup (scanned → vision)</small></span><span class="v" id="vDoc">10%</span></label>
+          <input type="range" id="pctDoc" min="0" max="100" step="5" value="10">
+        </div>
+        <div class="warnbox" id="mixWarn">Input mix is normalised to 100% in the maths.</div>
+
+        <div class="ctrl" style="margin-top:4px">
+          <label><span class="lbl">Of uploads, share with a diagram<small>drives the Gemini visual (3B)</small></span><span class="v" id="vDiagram">50%</span></label>
+          <input type="range" id="pctDiagram" min="0" max="100" step="5" value="50">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">3</span> Walkthrough depth</h2>
+        <p class="hint">The build pipeline is 5 LLM calls (steps A · parallel B · demo C · 3A explanation · answer key D).
+        A→B→C can regenerate when the self-check fails — the retry factor scales those three.</p>
+
+        <div class="ctrl">
+          <label><span class="lbl">Average solution steps<small>also the number of parallel-demo steps</small></span><span class="v" id="vSteps">5</span></label>
+          <input type="range" id="avgSteps" min="3" max="10" step="1" value="5">
+        </div>
+        <div class="ctrl">
+          <label><span class="lbl">Build retry factor<small>1.0 = always first try · 2.0 = always retried</small></span><span class="v" id="vRetry">1.15×</span></label>
+          <input type="range" id="retry" min="100" max="200" step="5" value="115">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">4</span> Interaction</h2>
+        <p class="hint">After the demo the child works their own question: each typed attempt is validated by one LLM
+        call, and each mid-step follow-up question (“ask”) is another.</p>
+        <div class="grid2">
+          <div class="ctrl">
+            <label><span class="lbl">Attempts / session</span><span class="v" id="vAtt">3</span></label>
+            <input type="range" id="avgAtt" min="0" max="12" step="1" value="3">
+          </div>
+          <div class="ctrl">
+            <label><span class="lbl">Follow-up Qs / session</span><span class="v" id="vAsk">1</span></label>
+            <input type="range" id="avgAsk" min="0" max="8" step="1" value="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="num">5</span> Audio (Inworld TTS-2)</h2>
+        <p class="hint">Charged per character. Audio narrates the 3A explanation, every solution &amp; demo step,
+        the intros / completion, and each piece of feedback / Q&amp;A reply.</p>
+
+        <div class="toggle-row" style="margin-bottom:16px">
+          <span style="font-size:13.5px">Generate audio for the walkthrough</span>
+          <label class="switch"><input type="checkbox" id="audioOn" checked><span class="slider"></span></label>
+        </div>
+
+        <div id="audioControls">
+          <div class="grid2">
+            <div class="ctrl">
+              <label><span class="lbl">Chars / step</span><span class="v" id="vCps">220</span></label>
+              <input type="range" id="charsStep" min="80" max="500" step="10" value="220">
+            </div>
+            <div class="ctrl">
+              <label><span class="lbl">Chars / 3A explanation</span><span class="v" id="vCex">320</span></label>
+              <input type="range" id="charsExp" min="100" max="800" step="20" value="320">
+            </div>
+            <div class="ctrl">
+              <label><span class="lbl">Fixed overhead chars<small>intros + completion</small></span><span class="v" id="vCov">400</span></label>
+              <input type="range" id="charsOv" min="0" max="1200" step="50" value="400">
+            </div>
+            <div class="ctrl">
+              <label><span class="lbl">Chars / feedback + Q&amp;A</span><span class="v" id="vCfb">220</span></label>
+              <input type="range" id="charsFb" min="60" max="600" step="20" value="220">
+            </div>
+          </div>
+          <p class="note" id="audioCharNote"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ RESULTS ============ -->
+    <div class="results">
+
+      <div class="total-card">
+        <div class="big"><span class="cur">$</span><span id="perSession">0.000</span></div>
+        <div class="lab">blended cost per homework session</div>
+        <div class="month">
+          <div>
+            <div class="m-big">$<span id="perMonth">0</span></div>
+            <div class="m-lab">per month · <span id="mSessions">1,000</span> sessions</div>
+          </div>
+          <div style="text-align:right">
+            <div class="m-big">$<span id="perYear">0</span></div>
+            <div class="m-lab">per year</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scen">
+        <div class="s calc">
+          <div class="t">Calculation session</div>
+          <div class="c">$<span id="sCalc">0</span></div>
+        </div>
+        <div class="s expl">
+          <div class="t">Explanation session</div>
+          <div class="c">$<span id="sExpl">0</span></div>
+        </div>
+      </div>
+
+      <div class="card bars">
+        <h3>Cost per session by service</h3>
+        <div id="svcBars"></div>
+      </div>
+
+      <div class="card phase">
+        <h3>Cost per session by phase</h3>
+        <table class="breakdown">
+          <thead><tr><th>Phase</th><th class="r">$/session</th><th class="r">$/month</th><th class="r">%</th></tr></thead>
+          <tbody id="phaseRows"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ ADVANCED ============ -->
+  <details class="adv">
+    <summary>Advanced assumptions — unit prices &amp; per-call tokens <span class="chev">▾</span></summary>
+    <div class="adv-body">
+
+      <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);margin:4px 0 12px">Unit prices</h3>
+      <div class="price-grid">
+        <div class="price-cell">
+          <div class="pt"><span class="dot o3"></span> o3 (reasoning)</div>
+          <div class="pr">
+            <label><span>$ / 1M input</span><input type="number" id="o3_in" value="2" step="0.1" min="0"></label>
+            <label><span>$ / 1M output</span><input type="number" id="o3_out" value="8" step="0.1" min="0"></label>
+          </div>
+        </div>
+        <div class="price-cell">
+          <div class="pt"><span class="dot gpt"></span> gpt-4.1</div>
+          <div class="pr">
+            <label><span>$ / 1M input</span><input type="number" id="gpt_in" value="2" step="0.1" min="0"></label>
+            <label><span>$ / 1M output</span><input type="number" id="gpt_out" value="8" step="0.1" min="0"></label>
+          </div>
+        </div>
+        <div class="price-cell">
+          <div class="pt"><span class="dot gemini"></span> Gemini 3.1 Flash Image</div>
+          <div class="pr">
+            <label><span>$ / image</span><input type="number" id="gem_img" value="0.067" step="0.001" min="0"></label>
+          </div>
+        </div>
+        <div class="price-cell">
+          <div class="pt"><span class="dot inworld"></span> Inworld TTS-2</div>
+          <div class="pr">
+            <label><span>$ / 1M chars</span><input type="number" id="tts_char" value="25" step="0.5" min="0"></label>
+          </div>
+        </div>
+      </div>
+      <p class="note">Defaults verified against live published pricing (June 2026): o3 &amp; gpt-4.1 both
+      <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image (Nano-Banana-2) <strong>$0.067 per
+      1K image</strong> on the standard tier ($0.034 batch); Inworld TTS-2 <strong>$25 per 1M characters on demand</strong>
+      — falling to $15 (at $300/mo), $12.50 (at $1,500/mo), and $10 at enterprise scale. omni-moderation is free.
+      Cached input on the OpenAI models is ~$0.50/1M; the Batch API is ~50% off. <strong>If you have negotiated or
+      volume rates, type them in — these are list prices, not your invoice.</strong></p>
+
+      <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);margin:24px 0 10px">
+        Per-call token assumptions</h3>
+      <p class="note" style="margin-bottom:12px">Each homework session fires the calls below. Output tokens for o3
+      <em>include</em> hidden reasoning tokens, so they sit near the <code>max_completion_tokens</code> budgets in
+      <code>solver.py</code>. “Per session” shows how many times each call runs for the current settings.</p>
+      <table class="assump">
+        <thead><tr>
+          <th>Call</th><th>Model</th><th class="r">Input tok</th><th class="r">Output tok</th><th class="r">Calls/session</th>
+        </tr></thead>
+        <tbody id="assumpRows"></tbody>
+      </table>
+      <p class="note" id="callCountNote" style="margin-top:12px"></p>
+    </div>
+  </details>
+
+  <footer>
+    Model maps directly to <code>app/modules/homework/</code>: <code>extractor.py</code> (intake),
+    <code>analyzer.py</code> (classify + curriculum/safety gate + lesson match), <code>solver.py</code>
+    (<code>build()</code> 5-call pipeline + attempts/ask), <code>media.py</code> (Inworld audio), and the Gemini
+    visual in <code>visual_assets/illustration_providers.py</code>. Estimates only — verify against live billing.
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+// ── Editable per-call token assumptions ──────────────────────────────────────
+// model: 'gpt' fixed, or 'route' = depends on calc/explanation (o3 vs gpt-4.1).
+// out has {o3, gpt} when route; otherwise a single number.
+const CALLS = [
+  // intake — only on the relevant input method (handled via .when)
+  {key:"extract_img",  name:"Extract — image (vision)",      model:"gpt",   in:1100, out:400,  when:"image",  retry:false},
+  {key:"extract_doc",  name:"Extract — PDF/Word cleanup",     model:"gpt",   in:900,  out:300,  when:"doc",    retry:false},
+  // classify + gate (every session)
+  {key:"analyze",      name:"Analyze (subject/type/gate)",    model:"gpt",   in:600,  out:200,  when:"all",    retry:false},
+  {key:"match",        name:"Match curriculum lesson",        model:"gpt",   in:1500, out:80,   when:"all",    retry:false},
+  // build pipeline (every session) — A,B,C scaled by retry factor
+  {key:"steps",        name:"A · Solution steps",             model:"route", in:700,  out:{o3:3000,gpt:900},  when:"all", retry:true},
+  {key:"parallel",     name:"B · Parallel question",          model:"route", in:800,  out:{o3:2500,gpt:400},  when:"all", retry:true},
+  {key:"solve",        name:"C · Parallel demo (worked)",     model:"route", in:900,  out:{o3:3000,gpt:1100}, when:"all", retry:true},
+  {key:"explain",      name:"3A · Explanation",               model:"route", in:600,  out:{o3:2200,gpt:500},  when:"all", retry:false},
+  {key:"answerkey",    name:"D · Private answer key",         model:"route", in:900,  out:{o3:3000,gpt:900},  when:"all", retry:false},
+  // interaction (variable count)
+  {key:"attempt",      name:"Validate attempt",               model:"route", in:700,  out:{o3:1500,gpt:300},  when:"attempt", retry:false},
+  {key:"ask",          name:"Follow-up Q&A",                  model:"route", in:800,  out:{o3:1500,gpt:400},  when:"ask",     retry:false},
+];
+
+const SERVICES = {
+  o3:      {label:"o3 (reasoning)",        cls:"o3"},
+  gpt:     {label:"gpt-4.1",               cls:"gpt"},
+  gemini:  {label:"Gemini Flash Image",    cls:"gemini"},
+  inworld: {label:"Inworld TTS-2",         cls:"inworld"},
+  free:    {label:"omni-moderation (free)",cls:"free"},
+};
+
+const $ = id => document.getElementById(id);
+const fmt = (n, d=2) => n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0})
+                  : n>=1   ? n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})
+                           : n.toLocaleString("en-US",{minimumFractionDigits:3,maximumFractionDigits:4});
+
+// state object pulled from inputs
+function readState(){
+  const s = {
+    sessions:  +$("sessions").value,
+    pctCalc:   +$("pctCalc").value/100,
+    pctText:   +$("pctText").value,
+    pctImage:  +$("pctImage").value,
+    pctDoc:    +$("pctDoc").value,
+    pctDiagram:+$("pctDiagram").value/100,
+    avgSteps:  +$("avgSteps").value,
+    retry:     +$("retry").value/100,
+    avgAtt:    +$("avgAtt").value,
+    avgAsk:    +$("avgAsk").value,
+    audioOn:   $("audioOn").checked,
+    charsStep: +$("charsStep").value,
+    charsExp:  +$("charsExp").value,
+    charsOv:   +$("charsOv").value,
+    charsFb:   +$("charsFb").value,
+    price:{
+      o3:{in:+$("o3_in").value, out:+$("o3_out").value},
+      gpt:{in:+$("gpt_in").value, out:+$("gpt_out").value},
+      gemImg:+$("gem_img").value,
+      ttsChar:+$("tts_char").value,
+    },
+  };
+  // normalise input mix to fractions of 1
+  const mixSum = s.pctText + s.pctImage + s.pctDoc || 1;
+  s.fText = s.pctText/mixSum; s.fImage = s.pctImage/mixSum; s.fDoc = s.pctDoc/mixSum;
+  s.mixOff = Math.abs(mixSum-100) > 0.5;
+  return s;
+}
+
+// per-token call cost in $
+function callCost(call, route, price){
+  const model = call.model==="route" ? route : "gpt";  // route picks o3/gpt
+  const pr = price[model];
+  const out = (typeof call.out==="object") ? call.out[model] : call.out;
+  return (call.in/1e6)*pr.in + (out/1e6)*pr.out;
+}
+
+// how many times a call runs in one session of a given route, for the current mix
+function callCount(call, s){
+  switch(call.when){
+    case "all":     return call.retry ? s.retry : 1;
+    case "image":   return s.fImage;             // weighted by intake mix
+    case "doc":     return s.fDoc;
+    case "attempt": return s.avgAtt;
+    case "ask":     return s.avgAsk;
+    default:        return 0;
+  }
+}
+
+function compute(s){
+  // service buckets, per-session, for the BLENDED average
+  const svc = {o3:0,gpt:0,gemini:0,inworld:0,free:0};
+  const phase = {Intake:0, "Classify & gate":0, Build:0, Interaction:0, Visuals:0, Audio:0};
+
+  // helper to run the LLM call set for a given route ('o3' or 'gpt'), returns {svc-add map, phaseMap}
+  function llmFor(route){
+    const out = {svc:{o3:0,gpt:0}, phase:{Intake:0,"Classify & gate":0,Build:0,Interaction:0}};
+    for(const c of CALLS){
+      const n = callCount(c, s);
+      if(n<=0) continue;
+      const cost = callCost(c, route, s.price) * n;
+      const model = c.model==="route" ? route : "gpt";
+      out.svc[model]+=cost;
+      if(c.key==="extract_img"||c.key==="extract_doc") out.phase.Intake+=cost;
+      else if(c.key==="analyze"||c.key==="match")      out.phase["Classify & gate"]+=cost;
+      else if(c.key==="attempt"||c.key==="ask")        out.phase.Interaction+=cost;
+      else                                             out.phase.Build+=cost;
+    }
+    return out;
+  }
+
+  const calc = llmFor("o3");
+  const expl = llmFor("gpt");
+
+  // intake & classify use gpt-4.1 regardless of route → identical in both; weight is fine either way.
+  // Blend by question type.
+  const w = s.pctCalc, x = 1-s.pctCalc;
+  const blendLLM = {
+    o3:  w*calc.svc.o3 + x*expl.svc.o3,
+    gpt: w*calc.svc.gpt + x*expl.svc.gpt,
+  };
+  svc.o3 += blendLLM.o3;
+  svc.gpt += blendLLM.gpt;
+  for(const p of ["Intake","Classify & gate","Build","Interaction"]){
+    phase[p] += w*calc.phase[p] + x*expl.phase[p];
+  }
+
+  // moderation — free, runs every session (1 call) but $0; show as a (free) line
+  svc.free += 0;
+
+  // visuals — Gemini, only upload sessions that contain a diagram
+  const uploadFrac = s.fImage + s.fDoc;
+  const visualPerSession = uploadFrac * s.pctDiagram * s.price.gemImg;
+  svc.gemini += visualPerSession;
+  phase.Visuals += visualPerSession;
+
+  // audio — Inworld, per character
+  let audioChars = 0;
+  if(s.audioOn){
+    audioChars = s.charsExp
+      + s.avgSteps*s.charsStep*2          // solution steps + parallel demo steps
+      + s.charsOv                         // intros + completion
+      + (s.avgAtt + s.avgAsk)*s.charsFb;  // feedback + Q&A replies
+  }
+  const audioPerSession = audioChars/1e6 * s.price.ttsChar;
+  svc.inworld += audioPerSession;
+  phase.Audio += audioPerSession;
+
+  const perSession = svc.o3+svc.gpt+svc.gemini+svc.inworld+svc.free;
+
+  // pure single-type session totals (for the scenario cards) — includes its own intake/audio/visual share
+  function fullSession(route, branch){
+    let t = branch.svc.o3+branch.svc.gpt;            // llm
+    t += uploadFrac*s.pctDiagram*s.price.gemImg;     // visual
+    t += audioPerSession;                            // audio (same)
+    return t;
+  }
+  const calcSession = fullSession("o3", calc);
+  const explSession = fullSession("gpt", expl);
+
+  return {svc, phase, perSession, calcSession, explSession, audioChars, blendLLM};
+}
+
+function render(){
+  const s = readState();
+  const r = compute(s);
+
+  // value labels
+  $("vSessions").textContent = s.sessions.toLocaleString("en-US");
+  $("mSessions").textContent = s.sessions.toLocaleString("en-US");
+  $("vCalc").textContent  = (+$("pctCalc").value)+"%";
+  $("vText").textContent  = (+$("pctText").value)+"%";
+  $("vImage").textContent = (+$("pctImage").value)+"%";
+  $("vDoc").textContent   = (+$("pctDoc").value)+"%";
+  $("vDiagram").textContent=(+$("pctDiagram").value)+"%";
+  $("vSteps").textContent = s.avgSteps;
+  $("vRetry").textContent = fmt(s.retry,2)+"×";
+  $("vAtt").textContent   = s.avgAtt;
+  $("vAsk").textContent   = s.avgAsk;
+  $("vCps").textContent   = s.charsStep;
+  $("vCex").textContent   = s.charsExp;
+  $("vCov").textContent   = s.charsOv;
+  $("vCfb").textContent   = s.charsFb;
+  $("mixWarn").classList.toggle("show", s.mixOff);
+
+  // slider fills
+  document.querySelectorAll('input[type=range]').forEach(el=>{
+    const min=+el.min, max=+el.max, v=+el.value;
+    el.style.setProperty('--p', ((v-min)/(max-min)*100)+'%');
+  });
+
+  // totals
+  $("perSession").textContent = fmt(r.perSession,3);
+  $("perMonth").textContent   = money(r.perSession*s.sessions);
+  $("perYear").textContent    = money(r.perSession*s.sessions*12);
+  $("sCalc").textContent      = fmt(r.calcSession,3);
+  $("sExpl").textContent      = fmt(r.explSession,3);
+
+  // audio control visibility + note
+  $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
+  $("audioControls").style.pointerEvents = s.audioOn ? "auto" : "none";
+  $("audioCharNote").textContent = s.audioOn
+    ? `≈ ${r.audioChars.toLocaleString("en-US")} characters narrated per session `
+      + `(${s.charsExp} + ${s.avgSteps}×${s.charsStep}×2 steps + ${s.charsOv} overhead + ${s.avgAtt+s.avgAsk}×${s.charsFb}).`
+    : "Audio disabled — Inworld cost is $0.";
+
+  // service bars
+  const order = ["o3","gpt","inworld","gemini","free"];
+  const max = Math.max(...order.map(k=>r.svc[k]), 1e-9);
+  $("svcBars").innerHTML = order.map(k=>{
+    const v = r.svc[k]; const pct = Math.max(v/max*100, v>0?1.5:0);
+    return `<div class="bar">
+      <div class="top"><span class="name"><span class="dot ${SERVICES[k].cls}"></span>${SERVICES[k].label}</span>
+      <span class="amt">$${fmt(v,4)}</span></div>
+      <div class="track"><div class="fill ${SERVICES[k].cls}" style="width:${pct}%"></div></div></div>`;
+  }).join("");
+
+  // phase table
+  const phaseOrder = ["Intake","Classify & gate","Build","Interaction","Visuals","Audio"];
+  const tot = r.perSession || 1e-9;
+  $("phaseRows").innerHTML = phaseOrder.map(p=>{
+    const v=r.phase[p];
+    return `<tr><td class="lbl">${p}</td><td class="r">$${fmt(v,4)}</td>
+      <td class="r">$${money(v*s.sessions)}</td><td class="r">${fmt(v/tot*100,1)}%</td></tr>`;
+  }).join("") +
+    `<tr style="border-top:1px solid var(--line)"><td class="lbl" style="color:var(--ink);font-weight:600">Total</td>
+     <td class="r" style="color:var(--accent)">$${fmt(r.perSession,4)}</td>
+     <td class="r" style="color:var(--accent)">$${money(r.perSession*s.sessions)}</td><td class="r">100%</td></tr>`;
+
+  // assumptions table
+  $("assumpRows").innerHTML = CALLS.map(c=>{
+    const n = callCount(c, s);
+    const mtag = c.model==="route"
+      ? `<span class="mtag o3">o3</span>/<span class="mtag gpt">4.1</span>`
+      : `<span class="mtag gpt">4.1</span>`;
+    const outTxt = (typeof c.out==="object") ? `${c.out.o3}/${c.out.gpt}` : c.out;
+    return `<tr><td class="nm">${c.name}${c.retry?' <span style="color:var(--ink-faint)">×retry</span>':''}</td>
+      <td>${mtag}</td><td class="r">${c.in}</td><td class="r">${outTxt}</td>
+      <td class="r">${fmt(n,2)}</td></tr>`;
+  }).join("");
+
+  // total call count note
+  let totalCalls = 0;
+  for(const c of CALLS) totalCalls += callCount(c, s);
+  $("callCountNote").innerHTML =
+    `≈ <strong>${fmt(totalCalls,1)} LLM calls per session</strong> at the current settings `
+    + `(5 fixed build calls + classification + intake + ${s.avgAtt} attempts + ${s.avgAsk} follow-ups, `
+    + `A/B/C ×${fmt(s.retry,2)} retry). Plus 1 free moderation call`
+    + (s.audioOn?`, audio, ` : `, `)
+    + `and ${fmt((s.fImage+s.fDoc)*s.pctDiagram,2)} Gemini images on average.`;
+}
+
+// ── presets ──────────────────────────────────────────────────────────────────
+const DEFAULTS = {sessions:1000,pctCalc:50,pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
+  avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsStep:220,charsExp:320,charsOv:400,charsFb:220,
+  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.067,tts_char:25};
+
+function applyPreset(p){
+  for(const k in p){
+    const el=$(k); if(!el) continue;
+    if(el.type==="checkbox") el.checked=!!p[k]; else el.value=p[k];
+  }
+  render();
+}
+$("btnReset").onclick = ()=>applyPreset(DEFAULTS);
+$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, sessions:200, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
+  avgSteps:4, avgAtt:2, avgAsk:0, charsStep:180, charsOv:300});
+$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, sessions:20000, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
+  pctDiagram:70, avgSteps:7, retry:140, avgAtt:5, avgAsk:3, charsStep:300, charsExp:500, charsOv:600, charsFb:300});
+
+// bind every input
+document.querySelectorAll('input').forEach(el=>{
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
+render();
+</script>
+</body>
+</html>
