@@ -74,6 +74,17 @@
   .switch input:checked + .slider{background:var(--good)}
   .switch input:checked + .slider:before{transform:translateX(19px)}
 
+  /* segmented single-select (input method) */
+  .seg{display:flex;flex-direction:column;gap:9px}
+  .seg label{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:var(--radius-sm);background:var(--panel-2);cursor:pointer;transition:.15s}
+  .seg label:hover{border-color:var(--ink-faint)}
+  .seg input[type=radio]{accent-color:var(--accent);width:17px;height:17px;flex:none;cursor:pointer}
+  .seg label:has(input:checked){border-color:var(--accent);background:rgba(94,200,255,.09)}
+  .seg .txt{display:flex;flex-direction:column;font-size:13.5px;color:var(--ink)}
+  .seg .txt small{color:var(--ink-faint);font-size:11.5px;margin-top:2px;font-family:var(--mono)}
+  .dim{opacity:.4;pointer-events:none}
+
   /* sticky results */
   .results{position:sticky;top:18px}
   .total-card{background:linear-gradient(150deg,#1b2a3a,#161b22);border:1px solid #2b4357;
@@ -208,26 +219,46 @@
       </div>
 
       <div class="card">
-        <h2><span class="num">2</span> How questions arrive</h2>
-        <p class="hint">Typed text needs no extraction call. Image / document uploads each cost one GPT-4.1
-        extraction pass; uploads that contain a real diagram also trigger one Gemini image.</p>
+        <h2><span class="num">2</span> How the question arrives</h2>
+        <p class="hint">A single session uses just <em>one</em> input method. Pick the one to model —
+        or flip to a mix if your students vary across the month.</p>
 
-        <div class="ctrl">
-          <label><span class="lbl">Typed text entry<small>no extraction LLM call</small></span><span class="v" id="vText">60%</span></label>
-          <input type="range" id="pctText" min="0" max="100" step="5" value="60">
+        <div class="toggle-row" style="margin-bottom:16px">
+          <span style="font-size:13.5px">Model a mix across sessions</span>
+          <label class="switch"><input type="checkbox" id="mixMode"><span class="slider"></span></label>
         </div>
-        <div class="ctrl">
-          <label><span class="lbl">Photo / image upload<small>GPT-4.1 vision extraction</small></span><span class="v" id="vImage">30%</span></label>
-          <input type="range" id="pctImage" min="0" max="100" step="5" value="30">
-        </div>
-        <div class="ctrl">
-          <label><span class="lbl">PDF / Word document<small>GPT-4.1 text cleanup (scanned → vision)</small></span><span class="v" id="vDoc">10%</span></label>
-          <input type="range" id="pctDoc" min="0" max="100" step="5" value="10">
-        </div>
-        <div class="warnbox" id="mixWarn">Input mix is normalised to 100% in the maths.</div>
 
-        <div class="ctrl" style="margin-top:4px">
-          <label><span class="lbl">Of uploads, share with a diagram<small>drives the Gemini visual (3B)</small></span><span class="v" id="vDiagram">50%</span></label>
+        <!-- SINGLE method (default): pick exactly one -->
+        <div id="singleMode">
+          <div class="seg">
+            <label><input type="radio" name="inmethod" value="text">
+              <span class="txt">Typed text entry<small>no extraction call — cheapest</small></span></label>
+            <label><input type="radio" name="inmethod" value="image" checked>
+              <span class="txt">Photo / image upload<small>+1 GPT-4.1 vision extraction</small></span></label>
+            <label><input type="radio" name="inmethod" value="doc">
+              <span class="txt">PDF / Word document<small>+1 GPT-4.1 cleanup (scanned → vision)</small></span></label>
+          </div>
+        </div>
+
+        <!-- MIX of methods: percentages across all sessions -->
+        <div id="mixControls" style="display:none">
+          <div class="ctrl">
+            <label><span class="lbl">Typed text entry<small>no extraction LLM call</small></span><span class="v" id="vText">60%</span></label>
+            <input type="range" id="pctText" min="0" max="100" step="5" value="60">
+          </div>
+          <div class="ctrl">
+            <label><span class="lbl">Photo / image upload<small>GPT-4.1 vision extraction</small></span><span class="v" id="vImage">30%</span></label>
+            <input type="range" id="pctImage" min="0" max="100" step="5" value="30">
+          </div>
+          <div class="ctrl">
+            <label><span class="lbl">PDF / Word document<small>GPT-4.1 text cleanup (scanned → vision)</small></span><span class="v" id="vDoc">10%</span></label>
+            <input type="range" id="pctDoc" min="0" max="100" step="5" value="10">
+          </div>
+          <div class="warnbox" id="mixWarn">Input mix is normalised to 100% in the maths.</div>
+        </div>
+
+        <div class="ctrl" id="diagramCtrl" style="margin-top:16px">
+          <label><span class="lbl" id="diagramLbl">If it's an upload, does it contain a diagram?<small>drives the Gemini visual (3B)</small></span><span class="v" id="vDiagram">50%</span></label>
           <input type="range" id="pctDiagram" min="0" max="100" step="5" value="50">
         </div>
       </div>
@@ -463,6 +494,8 @@ function readState(){
     spu:       +$("spu").value,
     sessions:  +$("users").value * +$("spu").value,
     pctCalc:   +$("pctCalc").value/100,
+    mixMode:   $("mixMode").checked,
+    method:    (document.querySelector('input[name=inmethod]:checked')||{}).value || "image",
     pctText:   +$("pctText").value,
     pctImage:  +$("pctImage").value,
     pctDoc:    +$("pctDoc").value,
@@ -483,10 +516,19 @@ function readState(){
       ttsChar:+$("tts_char").value,
     },
   };
-  // normalise input mix to fractions of 1
-  const mixSum = s.pctText + s.pctImage + s.pctDoc || 1;
-  s.fText = s.pctText/mixSum; s.fImage = s.pctImage/mixSum; s.fDoc = s.pctDoc/mixSum;
-  s.mixOff = Math.abs(mixSum-100) > 0.5;
+  // Input-method fractions of one session.
+  if(s.mixMode){
+    // Mix mode — percentages across all sessions, normalised to 1.
+    const mixSum = s.pctText + s.pctImage + s.pctDoc || 1;
+    s.fText = s.pctText/mixSum; s.fImage = s.pctImage/mixSum; s.fDoc = s.pctDoc/mixSum;
+    s.mixOff = Math.abs(mixSum-100) > 0.5;
+  } else {
+    // Single method — every session uses exactly the chosen one.
+    s.fText  = s.method==="text"  ? 1 : 0;
+    s.fImage = s.method==="image" ? 1 : 0;
+    s.fDoc   = s.method==="doc"   ? 1 : 0;
+    s.mixOff = false;
+  }
   return s;
 }
 
@@ -599,6 +641,13 @@ function render(){
   $("vImage").textContent = (+$("pctImage").value)+"%";
   $("vDoc").textContent   = (+$("pctDoc").value)+"%";
   $("vDiagram").textContent=(+$("pctDiagram").value)+"%";
+
+  // input-method mode: show radio (single) or sliders (mix); dim diagram when no upload involved
+  $("singleMode").style.display = s.mixMode ? "none" : "block";
+  $("mixControls").style.display = s.mixMode ? "block" : "none";
+  const uploadsPossible = s.mixMode ? (s.fImage + s.fDoc > 0) : (s.method !== "text");
+  $("diagramCtrl").classList.toggle("dim", !uploadsPossible);
+
   $("vSteps").textContent = s.avgSteps;
   $("vRetry").textContent = fmt(s.retry,2)+"×";
   $("vAtt").textContent   = s.avgAtt;
@@ -681,21 +730,28 @@ function render(){
 }
 
 // ── presets ──────────────────────────────────────────────────────────────────
-const DEFAULTS = {users:250,spu:4,pctCalc:50,pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
+const DEFAULTS = {users:250,spu:4,pctCalc:50,mixMode:false,inmethod:"image",
+  pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
   avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsStep:220,charsExp:320,charsOv:400,charsFb:220,
   o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.067,tts_char:25};
 
 function applyPreset(p){
   for(const k in p){
+    if(k==="inmethod"){
+      const radio=document.querySelector(`input[name=inmethod][value="${p[k]}"]`);
+      if(radio) radio.checked=true;
+      continue;
+    }
     const el=$(k); if(!el) continue;
     if(el.type==="checkbox") el.checked=!!p[k]; else el.value=p[k];
   }
   render();
 }
 $("btnReset").onclick = ()=>applyPreset(DEFAULTS);
-$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, users:50, spu:4, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
+// The usage presets describe a whole population, so they switch on mix mode.
+$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, mixMode:true, users:50, spu:4, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
   avgSteps:4, avgAtt:2, avgAsk:0, charsStep:180, charsOv:300});
-$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, users:2500, spu:8, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
+$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, mixMode:true, users:2500, spu:8, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
   pctDiagram:70, avgSteps:7, retry:140, avgAtt:5, avgAsk:3, charsStep:300, charsExp:500, charsOv:600, charsFb:300});
 
 // bind every input

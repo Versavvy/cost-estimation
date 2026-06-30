@@ -89,18 +89,27 @@ cost of that journey.
   - The rest → handled by the cheaper all-rounder (**gpt-4.1**).
   - **Slide this up and the cost goes up**, because you're using the pricier supplier more often.
 
-### Section 2 — How questions arrive
+### Section 2 — How the question arrives
 
-- **Typed text (%)** — the student just types. **Cheapest**, because nothing has to "read" an upload.
-- **Photo / image (%)** — the student snaps a picture. Costs a little extra to read it.
-- **PDF / Word (%)** — the student uploads a document. Same idea, slightly cheaper than a photo.
+A student only ever uses **one** way to give their question per session, so by default you just
+**pick one** from a short list (like ticking a box):
 
-  > These three should roughly add up to 100% (they're three ways the *same* question can arrive).
-  > If they don't, the tool just adjusts them proportionally and shows a small note — nothing breaks.
+- **Typed text** — the student types it in. **Cheapest**, because nothing has to "read" an upload.
+- **Photo / image** — the student snaps a picture. Costs a little extra to "read" it.
+- **PDF / Word** — the student uploads a document. Same idea, slightly cheaper than a photo.
 
-- **Of uploads, share with a diagram (%)** — of the photos/documents, how many actually have a
-  *picture* in them (a graph, a shape, a chart). Only these trigger the **artist (Gemini)** to draw.
-  More diagrams = more drawing = more cost.
+Whatever you pick is treated as *the* method for the session you're pricing.
+
+- **"Model a mix across sessions" switch** — flip this on only if you want to be realistic about a
+  *whole month* where different students use different methods. It swaps the single choice for three
+  percentage sliders (e.g. 60% type, 30% photo, 10% document). The tool blends them and, if they
+  don't add to 100%, quietly adjusts — nothing breaks. Leave it **off** for the simple "one session,
+  one method" view.
+
+- **"Does it contain a diagram?"** — only relevant when the method is an upload. It asks: of those
+  uploads, how many actually have a *picture* in them (a graph, a shape, a chart). Only those trigger
+  the **artist (Gemini)** to draw. If you chose *Typed text*, this is greyed out — typed questions
+  never produce a drawing.
 
 ### Section 3 — Walkthrough depth
 
