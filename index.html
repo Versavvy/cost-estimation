@@ -164,6 +164,10 @@
   /* detailed-breakdown sections — hidden until the toggle is on */
   .detail-only{display:none}
   body.show-detail .detail-only{display:block}
+  /* default (management) view: the controls column is all detail-only, so drop it and let results run full width */
+  body:not(.show-detail) .controls{display:none}
+  body:not(.show-detail) .layout{grid-template-columns:1fr}
+  body:not(.show-detail) .results{position:static}
   .btn.on{border-color:var(--accent);color:var(--ink);background:rgba(94,200,255,.08)}
 
   /* ===== Executive summary (management / stakeholder view) ===== */
@@ -188,6 +192,9 @@
   .ehc-num{font-size:26px;font-weight:750;font-family:var(--mono);letter-spacing:-.01em;line-height:1}
   .ehc.primary .ehc-num{color:var(--accent)}
   .ehc-note{font-size:11.5px;color:var(--ink-faint);margin-top:8px}
+  .exec-breaktoggle{margin:2px 0 4px}
+  #execBreakdown[hidden]{display:none}
+  #execBreakdown{margin-top:16px}
   .exec-activity h3{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);
     margin:0;font-weight:600;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .exec-activity h3 small{font-size:11.5px;text-transform:none;letter-spacing:0;color:var(--ink-faint);font-weight:400}
@@ -273,19 +280,19 @@
 
     <div class="exec-hero-cards">
       <div class="ehc primary">
-        <div class="ehc-lab">Cost per question</div>
+        <div class="ehc-lab">Average cost per session</div>
         <div class="ehc-num" id="exPerSession">$0</div>
         <div class="ehc-note">one student, one question, start to finish</div>
       </div>
       <div class="ehc">
-        <div class="ehc-lab">Per student / month</div>
-        <div class="ehc-num" id="exPerStudent">$0</div>
-        <div class="ehc-note"><span id="exSpuNote">4</span> questions each</div>
+        <div class="ehc-lab">Average cost per month</div>
+        <div class="ehc-num" id="exPerMonth">$0</div>
+        <div class="ehc-note">all students combined</div>
       </div>
       <div class="ehc">
-        <div class="ehc-lab">Total / month</div>
-        <div class="ehc-num" id="exPerMonth">$0</div>
-        <div class="ehc-note"><span id="exSessNote">1,000</span> questions answered</div>
+        <div class="ehc-lab">Average sessions per user</div>
+        <div class="ehc-num" id="exSessPerUser">0</div>
+        <div class="ehc-note">questions per student / month</div>
       </div>
       <div class="ehc">
         <div class="ehc-lab">Total / year</div>
@@ -294,50 +301,40 @@
       </div>
     </div>
 
-    <div class="exec-activity">
-      <h3>Average cost by activity <small>what each part of a homework session costs</small></h3>
+    <div class="exec-breaktoggle">
+      <button class="btn" id="btnExecBreak" aria-expanded="false">▾ Show cost breakdown by service</button>
+    </div>
+
+    <div class="exec-activity" id="execBreakdown" hidden>
+      <h3>Cost breakdown by service <small>what each part of one session costs</small></h3>
       <div class="eact-grid">
         <div class="eact full">
-          <div class="ei">⌨️</div>
-          <div class="en">Typed-in question</div>
-          <div class="ed">Student types the question — no photo to read</div>
-          <div class="ec" id="actText">$0</div>
-          <div class="tag">full session</div>
-        </div>
-        <div class="eact full">
-          <div class="ei">📷</div>
-          <div class="en">Photo / document upload</div>
-          <div class="ed">Student uploads a picture or PDF to be read</div>
-          <div class="ec" id="actUpload">$0</div>
-          <div class="tag">full session</div>
+          <div class="ei">🧠</div>
+          <div class="en">Reasoning model</div>
+          <div class="ed">Reads, works out and explains every question</div>
+          <div class="ec" id="svcReason">$0</div>
+          <div class="tag">per session</div>
         </div>
         <div class="eact part">
           <div class="ei">🔊</div>
-          <div class="en">Reading it aloud (audio)</div>
-          <div class="ed">Spoken narration for one session</div>
-          <div class="ec" id="actAudio">$0</div>
-          <div class="tag">part of a session</div>
+          <div class="en">Text-to-speech (audio)</div>
+          <div class="ed">Reads the walkthrough aloud (Inworld voice)</div>
+          <div class="ec" id="svcTts">$0</div>
+          <div class="tag">per session</div>
         </div>
         <div class="eact part">
           <div class="ei">🖼️</div>
-          <div class="en">Drawing a diagram</div>
-          <div class="ed">One picture drawn when homework has a figure</div>
-          <div class="ec" id="actImage">$0</div>
-          <div class="tag">per diagram</div>
+          <div class="en">Diagram generation</div>
+          <div class="ed">Draws a picture when the homework has a figure</div>
+          <div class="ec" id="svcImg">$0</div>
+          <div class="tag">per session</div>
         </div>
         <div class="eact full">
-          <div class="ei">🧮</div>
-          <div class="en">Maths / science question</div>
-          <div class="ed">Uses the deep-thinking model — costs more</div>
-          <div class="ec" id="actCalc">$0</div>
-          <div class="tag">full session</div>
-        </div>
-        <div class="eact full">
-          <div class="ei">✍️</div>
-          <div class="en">Explanation / essay question</div>
-          <div class="ed">Uses the cheaper all-rounder model</div>
-          <div class="ec" id="actExpl">$0</div>
-          <div class="tag">full session</div>
+          <div class="ei">🛡️</div>
+          <div class="en">Safety check</div>
+          <div class="ed">Screens every question before it runs</div>
+          <div class="ec" id="svcSafe">Free</div>
+          <div class="tag">no cost</div>
         </div>
       </div>
     </div>
@@ -360,7 +357,7 @@
     <!-- ============ CONTROLS ============ -->
     <div class="controls">
 
-      <div class="card">
+      <div class="card detail-only">
         <h2><span class="num">1</span> Users &amp; volume</h2>
         <p class="hint">One <em>session</em> is a single student taking one question through the full
         flow (upload → walkthrough → complete). Total monthly sessions = users × sessions per user.</p>
@@ -386,7 +383,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card detail-only">
         <h2><span class="num">2</span> How the question arrives</h2>
         <p class="hint">A single session uses just <em>one</em> input method. Pick the one to model —
         or flip to a mix if your students vary across the month.</p>
@@ -553,13 +550,12 @@
     </div>
   </div>
 
-  <!-- ============ CONTENT GENERATION COST (one-off, source doc) ============ -->
+  <!-- ============ LESSON CONTENT GENERATION COST ============ -->
   <div class="card contentcost" id="contentCost">
-    <h2><span class="num">＄</span> Content generation cost — one-off build</h2>
-    <p class="hint">A <strong>separate</strong> cost from the homework running cost above: this is the
-    <em>one-time</em> price to pre-generate all KS3 &amp; KS4 lesson content (script, TTS audio, 30 whiteboard
-    images and helpers per lesson). Figures are taken <strong>exactly</strong> from the <em>General Cost Estimation
-    Document</em> — not recomputed here.</p>
+    <h2><span class="num">＄</span> Lesson content generation cost</h2>
+    <p class="hint">A <strong>separate</strong> cost from the homework running cost above: the price to pre-generate
+    all KS3 &amp; KS4 lesson content (script, TTS audio, 30 whiteboard images and helpers per lesson). Every subject
+    is costed on the most expensive content model, <strong>gpt-4.1</strong>.</p>
 
     <div class="cc-sub">Estimated cost per lesson</div>
     <table>
@@ -568,10 +564,8 @@
         <th class="r">Image gen (×30)</th><th class="r">Helpers</th><th class="r">Total / lesson</th>
       </tr></thead>
       <tbody>
-        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">$1.5 – $2.0</td><td class="r">$0.7 – $1.0</td>
-          <td class="r">~$1.89</td><td class="r">~$0.01</td><td class="r cost">≈ $4.1 – $4.9</td></tr>
-        <tr><td class="nm">gpt-oss-120b (OpenRouter)</td><td class="r">$1.5 – $2.0</td><td class="r">~$0.50</td>
-          <td class="r">~$1.89</td><td class="r">~$0.01</td><td class="r cost">≈ $3.9 – $4.4</td></tr>
+        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">$2.25 – $3.0</td><td class="r">$1.05 – $1.5</td>
+          <td class="r">~$2.84</td><td class="r">~$0.02</td><td class="r cost">≈ $6.15 – $7.35</td></tr>
       </tbody>
     </table>
 
@@ -581,12 +575,12 @@
         <table>
           <thead><tr><th>Subject</th><th class="r">Units</th><th class="r">Lessons</th><th class="r">Cost</th></tr></thead>
           <tbody>
-            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">57</td><td class="r cost">$222.3 – $250.8</td></tr>
-            <tr><td class="nm">English</td><td class="r">8</td><td class="r">27</td><td class="r cost">$110.7 – $132.3</td></tr>
-            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">43</td><td class="r cost">$167.7 – $189.2</td></tr>
-            <tr><td class="nm">Chemistry</td><td class="r">8</td><td class="r">32</td><td class="r cost">$124.8 – $140.8</td></tr>
-            <tr><td class="nm">Biology</td><td class="r">6</td><td class="r">38</td><td class="r cost">$155.8 – $167.2</td></tr>
-            <tr class="tot"><td>Total</td><td class="r">35</td><td class="r">197</td><td class="r cost">$781.3 – $880.3</td></tr>
+            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">57</td><td class="r cost">$350.6 – $419.0</td></tr>
+            <tr><td class="nm">English</td><td class="r">8</td><td class="r">27</td><td class="r cost">$166.1 – $198.5</td></tr>
+            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">43</td><td class="r cost">$264.5 – $316.1</td></tr>
+            <tr><td class="nm">Chemistry</td><td class="r">8</td><td class="r">32</td><td class="r cost">$196.8 – $235.2</td></tr>
+            <tr><td class="nm">Biology</td><td class="r">6</td><td class="r">38</td><td class="r cost">$233.7 – $279.3</td></tr>
+            <tr class="tot"><td>Total</td><td class="r">35</td><td class="r">197</td><td class="r cost">$1,211.6 – $1,448.0</td></tr>
           </tbody>
         </table>
       </div>
@@ -595,12 +589,12 @@
         <table>
           <thead><tr><th>Subject</th><th class="r">Units</th><th class="r">Lessons</th><th class="r">Cost</th></tr></thead>
           <tbody>
-            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">74</td><td class="r cost">$288.6 – $325.6</td></tr>
-            <tr><td class="nm">English</td><td class="r">11</td><td class="r">38</td><td class="r cost">$155.8 – $186.2</td></tr>
-            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">34</td><td class="r cost">$132.6 – $149.6</td></tr>
-            <tr><td class="nm">Chemistry</td><td class="r">10</td><td class="r">49</td><td class="r cost">$179.4 – $202.4</td></tr>
+            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">74</td><td class="r cost">$455.1 – $543.9</td></tr>
+            <tr><td class="nm">English</td><td class="r">11</td><td class="r">38</td><td class="r cost">$233.7 – $279.3</td></tr>
+            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">34</td><td class="r cost">$209.1 – $249.9</td></tr>
+            <tr><td class="nm">Chemistry</td><td class="r">10</td><td class="r">49</td><td class="r cost">$301.4 – $360.2</td></tr>
             <tr><td class="nm">Biology</td><td class="r">—</td><td class="r">—</td><td class="r">—</td></tr>
-            <tr class="tot"><td>Total</td><td class="r">34</td><td class="r">195</td><td class="r cost">$756.4 – $863.8</td></tr>
+            <tr class="tot"><td>Total</td><td class="r">34</td><td class="r">195</td><td class="r cost">$1,199.3 – $1,433.3</td></tr>
           </tbody>
         </table>
       </div>
@@ -608,11 +602,11 @@
 
     <div class="cc-grand">
       <div class="g-lab"><strong>Whole curriculum</strong> — KS3 + KS4 combined · 69 units · 392 lessons</div>
-      <div class="g-num">$1,537.7 – $1,744.1</div>
+      <div class="g-num">$2,410.8 – $2,881.2</div>
     </div>
-    <p class="note" style="margin-top:12px">Source: <em>General Cost Estimation Document</em> (in this folder). The
-    combined total is the sum of the two Key-Stage totals as printed. Biology KS4 was not filled in the source document,
-    so it is left blank here rather than estimated.</p>
+    <p class="note" style="margin-top:12px">Every subject costed on gpt-4.1 (the most expensive content model). The
+    combined total is the sum of the two Key-Stage totals. Biology KS4 was not in the source curriculum count, so it is
+    left blank here rather than estimated.</p>
   </div>
 
   <!-- ============ ADVANCED ============ -->
@@ -711,6 +705,9 @@ const SERVICES = {
   free:    {label:"omni-moderation (free)",cls:"free"},
 };
 
+// Safety buffer applied to every provider price (invisible — inputs still show published rates).
+const PRICE_BUFFER = 1.5;
+
 const $ = id => document.getElementById(id);
 const fmt = (n, d=2) => n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0})
@@ -740,10 +737,10 @@ function readState(){
     charsOv:   +$("charsOv").value,
     charsFb:   +$("charsFb").value,
     price:{
-      o3:{in:+$("o3_in").value, out:+$("o3_out").value},
-      gpt:{in:+$("gpt_in").value, out:+$("gpt_out").value},
-      gemImg:+$("gem_img").value,
-      ttsChar:+$("tts_char").value,
+      o3:{in:+$("o3_in").value*PRICE_BUFFER, out:+$("o3_out").value*PRICE_BUFFER},
+      gpt:{in:+$("gpt_in").value*PRICE_BUFFER, out:+$("gpt_out").value*PRICE_BUFFER},
+      gemImg:+$("gem_img").value*PRICE_BUFFER,
+      ttsChar:+$("tts_char").value*PRICE_BUFFER,
     },
   };
   // Input-method fractions of one session.
@@ -916,18 +913,14 @@ function render(){
   $("exUsers").value = s.users;   $("exSpu").value = s.spu;   // keep dials in sync with Section 1
   $("exUsersV").textContent = s.users.toLocaleString("en-US");
   $("exSpuV").textContent   = s.spu;
-  $("exSpuNote").textContent  = s.spu;
-  $("exSessNote").textContent = s.sessions.toLocaleString("en-US");
-  $("exPerSession").textContent = "$"+fmt(r.perSession,3);
-  $("exPerStudent").textContent = "$"+money(r.perSession*s.spu);
-  $("exPerMonth").textContent   = "$"+money(r.perSession*s.sessions);
-  $("exPerYear").textContent    = "$"+money(r.perSession*s.sessions*12);
-  $("actText").textContent   = "$"+fmt(sessionForMethod(s,"text"),3);
-  $("actUpload").textContent = "$"+fmt(sessionForMethod(s,"image"),3);
-  $("actAudio").textContent  = "$"+fmt(r.svc.inworld,3);
-  $("actImage").textContent  = "$"+fmt(s.price.gemImg,3);
-  $("actCalc").textContent   = "$"+fmt(r.calcSession,3);
-  $("actExpl").textContent   = "$"+fmt(r.explSession,3);
+  $("exPerSession").textContent  = "$"+fmt(r.perSession,3);
+  $("exPerMonth").textContent    = "$"+money(r.perSession*s.sessions);
+  $("exSessPerUser").textContent = s.spu;
+  $("exPerYear").textContent     = "$"+money(r.perSession*s.sessions*12);
+  // breakdown by service (per session) — all subjects assumed to use the reasoning model
+  $("svcReason").textContent = "$"+fmt(r.svc.o3 + r.svc.gpt, 3);
+  $("svcTts").textContent    = "$"+fmt(r.svc.inworld, 3);
+  $("svcImg").textContent    = "$"+fmt(r.svc.gemini, 3);
 
   // audio control visibility + note
   $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
@@ -1013,6 +1006,16 @@ $("btnDetail").onclick = ()=>{
   const on = document.body.classList.toggle('show-detail');
   $("btnDetail").classList.toggle('on', on);
   $("btnDetail").textContent = on ? "▴ Hide detailed breakdown" : "▾ Show detailed breakdown";
+};
+
+// executive summary: cost breakdown by service is hidden by default
+$("btnExecBreak").onclick = ()=>{
+  const bd = $("execBreakdown");
+  const on = bd.hasAttribute('hidden');
+  if(on){ bd.removeAttribute('hidden'); } else { bd.setAttribute('hidden',''); }
+  $("btnExecBreak").classList.toggle('on', on);
+  $("btnExecBreak").setAttribute('aria-expanded', on ? 'true' : 'false');
+  $("btnExecBreak").textContent = on ? "▴ Hide cost breakdown by service" : "▾ Show cost breakdown by service";
 };
 
 // exec dials mirror the Section 1 sliders (two-way): drive users / sessions-per-user
