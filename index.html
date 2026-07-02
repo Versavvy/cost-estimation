@@ -164,6 +164,7 @@
   /* detailed-breakdown sections — hidden until the toggle is on */
   .detail-only{display:none}
   body.show-detail .detail-only{display:block}
+  body.show-detail .scen.detail-only{display:flex}
   /* default (management) view: the controls column is all detail-only, so drop it and let results run full width */
   body:not(.show-detail) .controls{display:none}
   body:not(.show-detail) .layout{grid-template-columns:1fr}
@@ -512,7 +513,7 @@
         </div>
       </div>
 
-      <div class="scen">
+      <div class="scen detail-only">
         <div class="s">
           <div class="t">One session · 1 user, 1 question</div>
           <div class="c" id="uOne" style="color:var(--accent)">$0</div>
@@ -523,7 +524,7 @@
         </div>
       </div>
 
-      <div class="scen">
+      <div class="scen detail-only">
         <div class="s calc">
           <div class="t">Calculation session</div>
           <div class="c">$<span id="sCalc">0</span></div>
