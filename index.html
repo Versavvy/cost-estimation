@@ -87,15 +87,6 @@
 
   /* sticky results */
   .results{position:sticky;top:18px}
-  .total-card{background:linear-gradient(150deg,#1b2a3a,#161b22);border:1px solid #2b4357;
-    border-radius:var(--radius);padding:22px;margin-bottom:18px}
-  .total-card .big{font-size:40px;font-weight:750;letter-spacing:-.02em;line-height:1;font-family:var(--mono)}
-  .total-card .big .cur{font-size:22px;color:var(--ink-dim);vertical-align:6px;margin-right:2px}
-  .total-card .lab{color:var(--ink-dim);font-size:12.5px;margin-top:6px;letter-spacing:.02em}
-  .total-card .month{margin-top:16px;padding-top:15px;border-top:1px solid #2b4357;display:flex;
-    justify-content:space-between;align-items:flex-end}
-  .total-card .month .m-big{font-size:24px;font-weight:700;font-family:var(--mono)}
-  .total-card .month .m-lab{color:var(--ink-dim);font-size:12px}
 
   .scen{display:flex;gap:10px;margin-bottom:18px}
   .scen .s{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-sm);
@@ -153,6 +144,7 @@
 
   .note{font-size:12px;color:var(--ink-faint);margin-top:6px;line-height:1.55}
   .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .toolbar-top{margin-top:2px}
   .btn{background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);border-radius:8px;
     padding:8px 14px;font-size:12.5px;cursor:pointer;font-family:var(--sans);transition:.15s}
   .btn:hover{border-color:var(--accent);color:var(--ink)}
@@ -184,6 +176,8 @@
   .exec-dial label small{display:block;color:var(--ink-faint);font-size:11.5px;font-weight:400;margin-top:1px}
   .exec-dial label .v{font-family:var(--mono);color:var(--accent);font-weight:700;font-size:14px;
     background:var(--panel);padding:2px 9px;border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+  .exec-dial label input.vnum{width:96px;text-align:right;line-height:1.4}
+  .exec-dial label input.vnum:focus{outline:none;border-color:var(--accent)}
   .exec-hero-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
   @media(max-width:820px){.exec-hero-cards{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:420px){.exec-hero-cards{grid-template-columns:1fr}}
@@ -259,6 +253,12 @@
     </div>
   </header>
 
+  <div class="toolbar toolbar-top">
+    <button class="btn" id="btnReset">↺ Reset to defaults</button>
+    <button class="btn" id="btnLow">Light usage preset</button>
+    <button class="btn" id="btnHeavy">Heavy usage preset</button>
+  </div>
+
   <!-- ============ EXECUTIVE SUMMARY (management / stakeholders) ============ -->
   <section class="exec">
     <div class="eyebrow">For management &amp; stakeholders</div>
@@ -270,12 +270,14 @@
 
     <div class="exec-dials">
       <div class="exec-dial">
-        <label><span>How many students use it<small>distinct students in a month</small></span><span class="v" id="exUsersV">50</span></label>
-        <input type="range" id="exUsers" min="1" max="100" step="1" value="50">
+        <label><span>How many students use it<small>type any number, or drag the slider</small></span>
+          <input type="number" class="v vnum" id="exUsersNum" min="1" max="100000" step="1" value="200"></label>
+        <input type="range" id="exUsers" min="1" max="1000" step="1" value="200">
       </div>
       <div class="exec-dial">
-        <label><span>Questions each student asks<small>homework questions per student, per month</small></span><span class="v" id="exSpuV">4</span></label>
-        <input type="range" id="exSpu" min="1" max="40" step="1" value="4">
+        <label><span>Questions each student asks<small>homework questions per student, per month</small></span>
+          <input type="number" class="v vnum" id="exSpuNum" min="1" max="1000" step="1" value="10"></label>
+        <input type="range" id="exSpu" min="1" max="100" step="1" value="10">
       </div>
     </div>
 
@@ -347,9 +349,6 @@
   </section>
 
   <div class="toolbar">
-    <button class="btn" id="btnReset">↺ Reset to defaults</button>
-    <button class="btn" id="btnLow">Light usage preset</button>
-    <button class="btn" id="btnHeavy">Heavy usage preset</button>
     <button class="btn" id="btnDetail" style="margin-left:auto">▾ Show detailed breakdown</button>
   </div>
 
@@ -364,13 +363,13 @@
         flow (upload → walkthrough → complete). Total monthly sessions = users × sessions per user.</p>
 
         <div class="ctrl">
-          <label><span class="lbl">Active users / month<small>distinct students using Homework Help</small></span><span class="v" id="vUsers">50</span></label>
-          <input type="range" id="users" min="1" max="100" step="1" value="50">
+          <label><span class="lbl">Active users / month<small>distinct students using Homework Help</small></span><span class="v" id="vUsers">200</span></label>
+          <input type="range" id="users" min="1" max="1000" step="1" value="200">
         </div>
 
         <div class="ctrl">
-          <label><span class="lbl">Sessions per user / month<small>how many questions one student brings</small></span><span class="v" id="vSpu">4</span></label>
-          <input type="range" id="spu" min="1" max="40" step="1" value="4">
+          <label><span class="lbl">Sessions per user / month<small>how many questions one student brings</small></span><span class="v" id="vSpu">10</span></label>
+          <input type="range" id="spu" min="1" max="100" step="1" value="10">
         </div>
 
         <div class="toggle-row" style="margin:2px 0 18px">
@@ -497,21 +496,6 @@
 
     <!-- ============ RESULTS ============ -->
     <div class="results">
-
-      <div class="total-card">
-        <div class="big"><span class="cur">$</span><span id="perSession">0.000</span></div>
-        <div class="lab">blended cost per homework session</div>
-        <div class="month">
-          <div>
-            <div class="m-big">$<span id="perMonth">0</span></div>
-            <div class="m-lab">per month · <span id="mSessions">1,000</span> sessions</div>
-          </div>
-          <div style="text-align:right">
-            <div class="m-big">$<span id="perYear">0</span></div>
-            <div class="m-lab">per year</div>
-          </div>
-        </div>
-      </div>
 
       <div class="scen detail-only">
         <div class="s">
@@ -717,10 +701,12 @@ const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0}
 
 // state object pulled from inputs
 function readState(){
+  const uCount = Math.max(1, Math.floor(+$("exUsersNum").value || 1));
+  const qCount = Math.max(1, Math.floor(+$("exSpuNum").value || 1));
   const s = {
-    users:     +$("users").value,
-    spu:       +$("spu").value,
-    sessions:  +$("users").value * +$("spu").value,
+    users:     uCount,
+    spu:       qCount,
+    sessions:  uCount * qCount,
     pctCalc:   +$("pctCalc").value/100,
     mixMode:   $("mixMode").checked,
     method:    (document.querySelector('input[name=inmethod]:checked')||{}).value || "image",
@@ -870,7 +856,6 @@ function render(){
   $("vSpu").textContent   = s.spu;
   $("uSpu").textContent   = s.spu;
   $("vSessions").textContent = s.sessions.toLocaleString("en-US");
-  $("mSessions").textContent = s.sessions.toLocaleString("en-US");
   $("vCalc").textContent  = (+$("pctCalc").value)+"%";
   $("vText").textContent  = (+$("pctText").value)+"%";
   $("vImage").textContent = (+$("pctImage").value)+"%";
@@ -900,9 +885,6 @@ function render(){
   });
 
   // totals
-  $("perSession").textContent = fmt(r.perSession,3);
-  $("perMonth").textContent   = money(r.perSession*s.sessions);
-  $("perYear").textContent    = money(r.perSession*s.sessions*12);
   $("sCalc").textContent      = fmt(r.calcSession,3);
   $("sExpl").textContent      = fmt(r.explSession,3);
 
@@ -911,9 +893,9 @@ function render(){
   $("uMonth").textContent = "$"+money(r.perSession*s.spu);
 
   // ---- executive summary (management view) ----
-  $("exUsers").value = s.users;   $("exSpu").value = s.spu;   // keep dials in sync with Section 1
-  $("exUsersV").textContent = s.users.toLocaleString("en-US");
-  $("exSpuV").textContent   = s.spu;
+  // number boxes are canonical; mirror the value into every slider (auto-clamps to each slider's max)
+  $("exUsers").value = s.users;   $("users").value = s.users;
+  $("exSpu").value   = s.spu;     $("spu").value   = s.spu;
   $("exPerSession").textContent  = "$"+fmt(r.perSession,3);
   $("exPerMonth").textContent    = "$"+money(r.perSession*s.sessions);
   $("exSessPerUser").textContent = s.spu;
@@ -978,7 +960,7 @@ function render(){
 }
 
 // ── presets ──────────────────────────────────────────────────────────────────
-const DEFAULTS = {users:50,spu:4,pctCalc:50,mixMode:false,inmethod:"image",
+const DEFAULTS = {exUsersNum:200,exSpuNum:10,pctCalc:50,mixMode:false,inmethod:"image",
   pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
   avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsStep:220,charsExp:320,charsOv:400,charsFb:220,
   o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.067,tts_char:25};
@@ -997,9 +979,9 @@ function applyPreset(p){
 }
 $("btnReset").onclick = ()=>applyPreset(DEFAULTS);
 // The usage presets describe a whole population, so they switch on mix mode.
-$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, mixMode:true, users:50, spu:4, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
+$("btnLow").onclick   = ()=>applyPreset({...DEFAULTS, mixMode:true, exUsersNum:300, exSpuNum:10, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
   avgSteps:4, avgAtt:2, avgAsk:0, charsStep:180, charsOv:300});
-$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, mixMode:true, users:100, spu:8, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
+$("btnHeavy").onclick = ()=>applyPreset({...DEFAULTS, mixMode:true, exUsersNum:600, exSpuNum:10, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
   pctDiagram:70, avgSteps:7, retry:140, avgAtt:5, avgAsk:3, charsStep:300, charsExp:500, charsOv:600, charsFb:300});
 
 // detailed-breakdown toggle — sections 3/4/5 + phase table are hidden by default
@@ -1019,9 +1001,12 @@ $("btnExecBreak").onclick = ()=>{
   $("btnExecBreak").textContent = on ? "▴ Hide cost breakdown by service" : "▾ Show cost breakdown by service";
 };
 
-// exec dials mirror the Section 1 sliders (two-way): drive users / sessions-per-user
-$("exUsers").addEventListener('input', ()=>{ $("users").value = $("exUsers").value; render(); });
-$("exSpu").addEventListener('input',   ()=>{ $("spu").value   = $("exSpu").value;   render(); });
+// The number boxes (#exUsersNum / #exSpuNum) are the canonical students / questions values.
+// Every slider — exec dials and Section 1 — writes into them before the generic render() below runs.
+$("exUsers").addEventListener('input', ()=>{ $("exUsersNum").value = $("exUsers").value; });
+$("exSpu").addEventListener('input',   ()=>{ $("exSpuNum").value   = $("exSpu").value;   });
+$("users").addEventListener('input',   ()=>{ $("exUsersNum").value = $("users").value;   });
+$("spu").addEventListener('input',     ()=>{ $("exSpuNum").value   = $("spu").value;     });
 
 // bind every input
 document.querySelectorAll('input').forEach(el=>{
