@@ -22,6 +22,39 @@ There is **no real money being spent** by this tool. It's a calculator, like a m
 
 ---
 
+## The Executive Summary (top of the tool) — for management & stakeholders
+
+The blue panel at the very top is the **only part most people need**. It has no technical jargon.
+
+**Two dials:**
+
+- **How many students use it** — distinct students in a month.
+- **Questions each student asks** — how many homework questions an average student brings per month.
+
+These two are the same as the detailed "Users & volume" sliders lower down — move either place and both update together.
+
+**Four headline cards:**
+
+- **Cost per question** — the average price of one student taking one question through the whole flow. This is *the* number to remember.
+- **Per student / month** — what one student costs you over a month.
+- **Total / month** — the whole monthly bill.
+- **Total / year** — the same, annualised.
+
+**"Average cost by activity" cards** — this answers "what does each *thing* cost?" in plain terms:
+
+| Card | What it means |
+|------|---------------|
+| **Typed-in question** | A whole session where the student typed the question (cheapest — nothing to "read"). |
+| **Photo / document upload** | A whole session where the student uploaded a picture/PDF (a little extra to read it). |
+| **Reading it aloud (audio)** | Just the voice-narration slice of one session. |
+| **Drawing a diagram** | The cost of drawing **one** picture, when homework contains a figure. |
+| **Maths / science question** | A whole session that used the pricey deep-thinking model. |
+| **Explanation / essay question** | A whole session that used the cheaper all-rounder model. |
+
+Cards marked *full session* are the all-in price of that kind of session; *part of a session* / *per diagram* are single building blocks. Everything under this panel (the toolbar, Sections 1–5, Advanced assumptions) simply lets you refine the assumptions behind these headline numbers.
+
+---
+
 ## Who gets paid, and for what
 
 Think of it as **five suppliers**. Each does one job:
@@ -200,6 +233,54 @@ my best-guess defaults.
 - **Light usage preset** — a small, cheap deployment (few students, simple questions).
 - **Heavy usage preset** — a big, busy deployment (lots of students, lots of calculation,
   lots of audio). Great for seeing your "worst case" bill.
+
+---
+
+## Content generation cost — the one-off build (separate section)
+
+Near the bottom of the page there is a **separate** block titled *"Content generation cost — one-off build."*
+It answers a different question from everything above it:
+
+- Everything else on the page = the **running cost** of a student *using* Homework Help (pay-per-use, forever).
+- This block = the **one-time cost** to *build the lesson content* in the first place — writing each lesson's
+  script, recording its audio, drawing its ~30 whiteboard images, and the small helper calls. You pay it once
+  per lesson when the content is generated, not every time a student opens it.
+
+The figures here are **copied exactly** from the *General Cost Estimation Document* — the tool does not recompute
+them, so they always match that source.
+
+**Cost per lesson** (two possible content models):
+
+| Content model | TTS | Content LLM | Image gen (×30) | Helpers | Total / lesson |
+|---------------|-----|-------------|-----------------|---------|----------------|
+| gpt-4.1 (OpenAI) | $1.5 – $2.0 | $0.7 – $1.0 | ~$1.89 | ~$0.01 | **≈ $4.1 – $4.9** |
+| gpt-oss-120b (OpenRouter) | $1.5 – $2.0 | ~$0.50 | ~$1.89 | ~$0.01 | **≈ $3.9 – $4.4** |
+
+**Whole curriculum, by key stage:**
+
+| Key Stage 3 | Units | Lessons | Cost |
+|-------------|-------|---------|------|
+| Mathematics | 6 | 57 | $222.3 – $250.8 |
+| English | 8 | 27 | $110.7 – $132.3 |
+| Physics | 7 | 43 | $167.7 – $189.2 |
+| Chemistry | 8 | 32 | $124.8 – $140.8 |
+| Biology | 6 | 38 | $155.8 – $167.2 |
+| **Total** | **35** | **197** | **$781.3 – $880.3** |
+
+| Key Stage 4 | Units | Lessons | Cost |
+|-------------|-------|---------|------|
+| Mathematics | 6 | 74 | $288.6 – $325.6 |
+| English | 11 | 38 | $155.8 – $186.2 |
+| Physics | 7 | 34 | $132.6 – $149.6 |
+| Chemistry | 10 | 49 | $179.4 – $202.4 |
+| Biology | — | — | — |
+| **Total** | **34** | **195** | **$756.4 – $863.8** |
+
+**Whole curriculum (KS3 + KS4 combined): 69 units · 392 lessons · $1,537.7 – $1,744.1.**
+
+> Two honesty notes: **Biology KS4** was left blank in the source document, so it is shown blank here rather than
+> guessed. The **combined total** is simply the two Key-Stage totals added together — every other number is copied
+> verbatim from the source.
 
 ---
 
