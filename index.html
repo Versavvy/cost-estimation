@@ -187,9 +187,6 @@
   .ehc-num{font-size:26px;font-weight:750;font-family:var(--mono);letter-spacing:-.01em;line-height:1}
   .ehc.primary .ehc-num{color:var(--accent)}
   .ehc-note{font-size:11.5px;color:var(--ink-faint);margin-top:8px}
-  .exec-preview-note{margin:-6px 0 14px;font-size:12.5px;color:var(--accent);
-    background:rgba(94,200,255,.08);border:1px solid rgba(94,200,255,.28);border-radius:8px;padding:9px 13px}
-  .exec-preview-note[hidden]{display:none}
   .exec-breaktoggle{margin:2px 0 4px}
   #execBreakdown[hidden]{display:none}
   #execBreakdown{margin-top:16px}
@@ -307,8 +304,6 @@
         <div class="ehc-note">at the current pace</div>
       </div>
     </div>
-
-    <p class="exec-preview-note" id="execPreviewNote" hidden></p>
 
     <div class="exec-breaktoggle">
       <button class="btn" id="btnExecBreak" aria-expanded="false">▾ Show cost breakdown by service</button>
@@ -885,8 +880,6 @@ function render(){
   const s = readState();
   const r = compute(s);
 
-  clearPresetPreview();   // a live recompute means we're showing the real dial state, not a preset preview
-
   // value labels
   $("vUsers").textContent = s.users.toLocaleString("en-US");
   $("vSpu").textContent   = s.spu;
@@ -914,12 +907,6 @@ function render(){
   $("vCfb").textContent   = s.charsFb;
   $("mixWarn").classList.toggle("show", s.mixOff);
 
-  // slider fills
-  document.querySelectorAll('input[type=range]').forEach(el=>{
-    const min=+el.min, max=+el.max, v=+el.value;
-    el.style.setProperty('--p', ((v-min)/(max-min)*100)+'%');
-  });
-
   // totals
   $("sCalc").textContent      = fmt(r.calcSession,3);
   $("sExpl").textContent      = fmt(r.explSession,3);
@@ -933,6 +920,12 @@ function render(){
   $("exUsers").value = s.users;   $("users").value = s.users;
   $("exSpu").value   = s.spu;     $("spu").value   = s.spu;
   updateExecCards(s, r);
+
+  // slider fills — AFTER the exec mirror above, so the mirrored dials' fill track matches their new value
+  document.querySelectorAll('input[type=range]').forEach(el=>{
+    const min=+el.min, max=+el.max, v=+el.value;
+    el.style.setProperty('--p', ((v-min)/(max-min)*100)+'%');
+  });
 
   // audio control visibility + note
   $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
@@ -1012,44 +1005,15 @@ function setPresetInputs(p){
 // Full apply: move the controls to the preset and recompute everything.
 function applyPreset(p){ setPresetInputs(p); render(); }
 
-// Cards-only preview: refresh the executive-summary cards to a preset scenario WITHOUT
-// disturbing any dial/slider. Snapshot every control, apply the preset just long enough to
-// read + compute, update the cards, then restore the controls exactly as they were.
-function previewPresetCards(p, label){
-  const inputs = [...document.querySelectorAll('input')];
-  const snap = inputs.map(el => [el, el.checked, el.value]);
-  setPresetInputs(p);
-  const s = readState();
-  const r = compute(s);
-  for(const [el, checked, value] of snap){ el.checked = checked; el.value = value; }
-  updateExecCards(s, r);   // cards last, so they show the preset scenario after controls are restored
-  // visible cue: highlight the active preset + show the "preview" note (cards ≠ dials on purpose)
-  $("btnLow").classList.toggle('on', label==="Light");
-  $("btnHeavy").classList.toggle('on', label==="Heavy");
-  const note = $("execPreviewNote");
-  note.innerHTML = `Showing the <strong>${label} usage</strong> scenario in the cards above `
-    + `(${s.users.toLocaleString("en-US")} students × ${s.spu} questions). Your dials are unchanged — `
-    + `move any dial to return to your own numbers.`;
-  note.hidden = false;
-}
+// Light / Heavy differ from Reset ONLY in volume (students × questions). They share the exact same
+// per-session profile as the defaults, so "cost per session" stays constant across all three presets —
+// only the monthly / yearly / sessions-per-user figures move.
+const LOW_PRESET   = {...DEFAULTS, exUsersNum:300, exSpuNum:20};
+const HEAVY_PRESET = {...DEFAULTS, exUsersNum:600, exSpuNum:40};
 
-// Any real recompute (a dial was touched, or Reset) exits preview mode.
-function clearPresetPreview(){
-  $("btnLow").classList.remove('on');
-  $("btnHeavy").classList.remove('on');
-  const note = $("execPreviewNote");
-  if(note) note.hidden = true;
-}
-
-const LOW_PRESET   = {...DEFAULTS, mixMode:true, exUsersNum:300, exSpuNum:20, pctCalc:40, pctText:75, pctImage:20, pctDoc:5,
-  avgSteps:4, avgAtt:2, avgAsk:0, charsStep:180, charsOv:300};
-const HEAVY_PRESET = {...DEFAULTS, mixMode:true, exUsersNum:600, exSpuNum:40, pctCalc:65, pctText:35, pctImage:45, pctDoc:20,
-  pctDiagram:70, avgSteps:7, retry:140, avgAtt:5, avgAsk:3, charsStep:300, charsExp:500, charsOv:600, charsFb:300};
-
-$("btnReset").onclick = ()=>applyPreset(DEFAULTS);            // Reset fully restores the controls
-// Light / Heavy only preview into the cards — the dials stay exactly where the user set them.
-$("btnLow").onclick   = ()=>previewPresetCards(LOW_PRESET, "Light");
-$("btnHeavy").onclick = ()=>previewPresetCards(HEAVY_PRESET, "Heavy");
+$("btnReset").onclick = ()=>applyPreset(DEFAULTS);
+$("btnLow").onclick   = ()=>applyPreset(LOW_PRESET);
+$("btnHeavy").onclick = ()=>applyPreset(HEAVY_PRESET);
 
 // detailed-breakdown toggle — sections 3/4/5 + phase table are hidden by default
 $("btnDetail").onclick = ()=>{
