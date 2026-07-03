@@ -328,7 +328,7 @@
         <div class="eact part">
           <div class="ei">🖼️</div>
           <div class="en">Diagram generation</div>
-          <div class="ed">Draws a picture when the homework has a figure</div>
+          <div class="ed">A real-time image at every step — <span id="svcImgCount">11</span> per session</div>
           <div class="ec" id="svcImg">$0</div>
           <div class="tag">per session</div>
         </div>
@@ -423,9 +423,12 @@
         </div>
 
         <div class="ctrl" id="diagramCtrl" style="margin-top:16px">
-          <label><span class="lbl" id="diagramLbl">If it's an upload, does it contain a diagram?<small>drives the Gemini visual (3B)</small></span><span class="v" id="vDiagram">50%</span></label>
+          <label><span class="lbl" id="diagramLbl">If it's an upload, does it contain a diagram?<small>informational only — images now render at every step regardless</small></span><span class="v" id="vDiagram">50%</span></label>
           <input type="range" id="pctDiagram" min="0" max="100" step="5" value="50">
         </div>
+        <p class="note" style="margin-top:6px">Diagram images are generated <strong>in real time at every walkthrough
+        step of every session</strong> (1 explanation + 2×steps), so image cost no longer depends on whether the
+        upload has a figure. This slider is kept for reference only.</p>
       </div>
 
       <div class="card detail-only">
@@ -462,7 +465,10 @@
       <div class="card detail-only">
         <h2><span class="num">5</span> Audio (Inworld TTS-2)</h2>
         <p class="hint">Charged per character. Audio narrates the 3A explanation, every solution &amp; demo step,
-        the intros / completion, and each piece of feedback / Q&amp;A reply.</p>
+        the intros / completion, and each piece of feedback / Q&amp;A reply. <strong>Audio is costed on the
+        <em>maximum</em> narration length</strong> (every driver below at its ceiling ≈ 24,000 chars/session),
+        since real homework narration runs far longer than a typical figure — so the sliders below define the
+        ceiling used, not a lower "typical" value.</p>
 
         <div class="toggle-row" style="margin-bottom:16px">
           <span style="font-size:13.5px">Generate audio for the walkthrough</span>
@@ -703,6 +709,13 @@ const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0}
 function readState(){
   const uCount = Math.max(1, Math.floor(+$("exUsersNum").value || 1));
   const qCount = Math.max(1, Math.floor(+$("exSpuNum").value || 1));
+  // Maximum characters a session's audio can produce — every audio driver at its slider ceiling.
+  // charsExp + (avgSteps × charsStep × 2) + charsOv + ((avgAtt + avgAsk) × charsFb)
+  const mx = id => +$(id).max;
+  const maxAudioChars = mx("charsExp")
+    + mx("avgSteps") * mx("charsStep") * 2
+    + mx("charsOv")
+    + (mx("avgAtt") + mx("avgAsk")) * mx("charsFb");
   const s = {
     users:     uCount,
     spu:       qCount,
@@ -723,6 +736,7 @@ function readState(){
     charsExp:  +$("charsExp").value,
     charsOv:   +$("charsOv").value,
     charsFb:   +$("charsFb").value,
+    maxAudioChars,
     price:{
       o3:{in:+$("o3_in").value*PRICE_BUFFER, out:+$("o3_out").value*PRICE_BUFFER},
       gpt:{in:+$("gpt_in").value*PRICE_BUFFER, out:+$("gpt_out").value*PRICE_BUFFER},
@@ -807,20 +821,19 @@ function compute(s){
   // moderation — free, runs every session (1 call) but $0; show as a (free) line
   svc.free += 0;
 
-  // visuals — Gemini, only upload sessions that contain a diagram
+  // visuals — Gemini, generated in real time at EVERY phase of EVERY session (not gated on uploads).
+  // One image per displayed walkthrough step: the 3A explanation + each demo step + each your-turn step.
   const uploadFrac = s.fImage + s.fDoc;
-  const visualPerSession = uploadFrac * s.pctDiagram * s.price.gemImg;
+  const imagesPerSession = 2*s.avgSteps + 1;   // 1 (explanation) + avgSteps (demo) + avgSteps (your-turn)
+  const visualPerSession = imagesPerSession * s.price.gemImg;
   svc.gemini += visualPerSession;
   phase.Visuals += visualPerSession;
 
-  // audio — Inworld, per character
-  let audioChars = 0;
-  if(s.audioOn){
-    audioChars = s.charsExp
-      + s.avgSteps*s.charsStep*2          // solution steps + parallel demo steps
-      + s.charsOv                         // intros + completion
-      + (s.avgAtt + s.avgAsk)*s.charsFb;  // feedback + Q&A replies
-  }
+  // audio — Inworld, per character.
+  // Costed on the MAXIMUM narration length a session can produce (every audio driver at its ceiling),
+  // because real homework narration runs far longer than a "typical" figure. Decoupled from the depth /
+  // interaction sliders on purpose, so using the max here does NOT also inflate the LLM call counts.
+  const audioChars = s.audioOn ? s.maxAudioChars : 0;
   const audioPerSession = audioChars/1e6 * s.price.ttsChar;
   svc.inworld += audioPerSession;
   phase.Audio += audioPerSession;
@@ -830,14 +843,14 @@ function compute(s){
   // pure single-type session totals (for the scenario cards) — includes its own intake/audio/visual share
   function fullSession(route, branch){
     let t = branch.svc.o3+branch.svc.gpt;            // llm
-    t += uploadFrac*s.pctDiagram*s.price.gemImg;     // visual
+    t += visualPerSession;                           // visual (same — images every session)
     t += audioPerSession;                            // audio (same)
     return t;
   }
   const calcSession = fullSession("o3", calc);
   const explSession = fullSession("gpt", expl);
 
-  return {svc, phase, perSession, calcSession, explSession, audioChars, blendLLM};
+  return {svc, phase, perSession, calcSession, explSession, audioChars, imagesPerSession, blendLLM};
 }
 
 // blended full-session cost if EVERY session used one given input method (for the exec cards)
@@ -904,13 +917,16 @@ function render(){
   $("svcReason").textContent = "$"+fmt(r.svc.o3 + r.svc.gpt, 3);
   $("svcTts").textContent    = "$"+fmt(r.svc.inworld, 3);
   $("svcImg").textContent    = "$"+fmt(r.svc.gemini, 3);
+  $("svcImgCount").textContent = r.imagesPerSession;
 
   // audio control visibility + note
   $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
   $("audioControls").style.pointerEvents = s.audioOn ? "auto" : "none";
   $("audioCharNote").textContent = s.audioOn
-    ? `≈ ${r.audioChars.toLocaleString("en-US")} characters narrated per session `
-      + `(${s.charsExp} + ${s.avgSteps}×${s.charsStep}×2 steps + ${s.charsOv} overhead + ${s.avgAtt+s.avgAsk}×${s.charsFb}).`
+    ? `Costed on the MAXIMUM narration length: ${r.audioChars.toLocaleString("en-US")} characters per session `
+      + `(every audio driver at its ceiling — ${(+$("charsExp").max)} + ${(+$("avgSteps").max)}×${(+$("charsStep").max)}×2 steps + `
+      + `${(+$("charsOv").max)} overhead + (${(+$("avgAtt").max)}+${(+$("avgAsk").max)})×${(+$("charsFb").max)} feedback). `
+      + `The per-item sliders below are for reference — audio is always billed at this maximum.`
     : "Audio disabled — Inworld cost is $0.";
 
   // service bars
@@ -956,7 +972,7 @@ function render(){
     + `(5 fixed build calls + classification + intake + ${s.avgAtt} attempts + ${s.avgAsk} follow-ups, `
     + `A/B/C ×${fmt(s.retry,2)} retry). Plus 1 free moderation call`
     + (s.audioOn?`, audio, ` : `, `)
-    + `and ${fmt((s.fImage+s.fDoc)*s.pctDiagram,2)} Gemini images on average.`;
+    + `and ${r.imagesPerSession} real-time Gemini images (one per walkthrough step: 1 + 2×${s.avgSteps}).`;
 }
 
 // ── presets ──────────────────────────────────────────────────────────────────
