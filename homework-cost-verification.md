@@ -167,11 +167,14 @@ count (the *range* uses the explanation-only and calculation-only bounds, $2.111
 | Preset | Students × questions | Sessions / month | Monthly (blended) | Yearly (blended) | Monthly range |
 |---|---|---|---|---|---|
 | **Reset to defaults** | 200 × 10 | 2,000 | **$4,408** | **$52,896** | $4,222 – $4,594 |
-| **Light usage** | 300 × 10 | 3,000 | **$6,612** | **$79,344** | $6,333 – $6,891 |
-| **Heavy usage** | 600 × 10 | 6,000 | **$13,224** | **$158,688** | $12,666 – $13,782 |
+| **Light usage** | 300 × 20 | 6,000 | **$13,224** | **$158,688** | $12,666 – $13,782 |
+| **Heavy usage** | 600 × 40 | 24,000 | **$52,896** | **$634,752** | $50,664 – $55,128 |
 
-*The two levers that move these most:* the **step-image assumption** (Section 3 — fewer images per step if
-some are cached) and the **Inworld tier** (a $1,500/mo commit halves the audio line).
+*Monthly figures use the blended-default per-session cost; the Light/Heavy presets also raise walkthrough
+depth (more steps → more images and narration), so their true per-session cost is a little higher — treat
+these as a lower-middle estimate. The two levers that move these most: the **step-image assumption**
+(Section 3 — fewer images per step if some are cached) and the **Inworld tier** (a $1,500/mo commit halves
+the audio line).*
 
 ---
 
