@@ -2,13 +2,13 @@
 
 > **Purpose.** This document lets us *confirm* the per-session cost the estimator shows for the
 > Homework Help (Tier 2) flow. It checks every provider unit price against the live provider
-> documentation, then shows exactly how the two biggest lines — **TTS audio** and **real-time image
-> generation** — are counted, and explains the o3 reasoning-token risk.
+> documentation, then shows exactly how the biggest line — **TTS audio** — is counted, how image
+> generation is now costed at **one diagram per session**, and explains the o3 reasoning-token risk.
 >
 > **Bottom line up front:** the unit prices are *correct and current*. The headline number is driven by
-> three deliberate, conservative choices: **audio is billed on the MAXIMUM narration length** (Section 2),
-> **a diagram image is generated in real time at every walkthrough step of every session** (Section 3),
-> and every price carries a **+50% buffer**. The figure to keep validating on a real invoice is o3's
+> two deliberate, conservative choices: **audio is billed on the MAXIMUM narration length** (Section 2)
+> and every price carries a **+15% buffer**. Image generation is now a single diagram per session
+> (Section 3), so it is a minor line. The figure to keep validating on a real invoice is o3's
 > **hidden reasoning tokens** (Section 4.3).
 
 ---
@@ -23,11 +23,11 @@
 | Text-to-speech | **Inworld TTS-2** | **$25.00 / 1M characters (on-demand)** | $25 | ✅ matches Inworld |
 | Safety | omni-moderation | Free | $0 | ✅ |
 
-**The +50% safety buffer.** Every price above is multiplied by **1.5** inside the estimator before any
+**The +15% safety buffer.** Every price above is multiplied by **1.15** inside the estimator before any
 figure is shown, as an internal margin for retries, prompt drift and future price moves. So the effective
-rates the estimator charges against are: o3 / gpt-4.1 **$3 / $12** per 1M, Gemini **$0.1005** per image,
-Inworld **$37.50** per 1M characters. Throughout, we show **both** columns — *"list"* (the provider's
-published price, for reconciliation) and *"+50%"* (what the estimator displays).
+rates the estimator charges against are: o3 / gpt-4.1 **$2.30 / $9.20** per 1M, Gemini **$0.077** per image,
+Inworld **$28.75** per 1M characters. Throughout, we show **both** columns — *"list"* (the provider's
+published price, for reconciliation) and *"+15%"* (what the estimator displays).
 
 ---
 
@@ -35,7 +35,7 @@ published price, for reconciliation) and *"+50%"* (what the estimator displays).
 
 Inworld bills **per character** sent to synthesis. Real homework narration runs far longer than a "typical"
 estimate, so the estimator costs audio on the **maximum** a session can produce — every audio driver at its
-ceiling. This is the figure shown on the dashboard.
+ceiling. This is the figure shown on the dashboard, and it is now the **single largest line in a session**.
 
 | Phase narrated | Max characters | At the slider ceiling |
 |---|---|---|
@@ -45,7 +45,7 @@ ceiling. This is the figure shown on the dashboard.
 | Attempt feedback + Q&A | 12,000 | `(12 + 8) × 600` |
 | **Maximum per session (billed)** | **24,000** | |
 
-**Cost of 24,000 characters:** list `24,000 ÷ 1,000,000 × $25` = **$0.60** · +50% = **$0.90**.
+**Cost of 24,000 characters:** list `24,000 ÷ 1,000,000 × $25` = **$0.60** · +15% = **$0.69**.
 
 Inworld gets cheaper with commitment, and we estimate on the most expensive on-demand tier, so a real
 audio invoice can only come in lower:
@@ -59,32 +59,25 @@ audio invoice can only come in lower:
 
 ---
 
-## 3. Image generation (Gemini 3.1 Flash Image) — one per step, every session
+## 3. Image generation (Gemini 3.1 Flash Image) — one diagram per session
 
-Diagram images are generated **in real time at every displayed walkthrough step of every session** — this
-is *not* gated on whether the child's upload contained a figure. One image is produced for the 3A
-explanation, one for each parallel-demo step, and one for each "your-turn" step:
+Homework Help generates **exactly one diagram image per session**, regardless of walkthrough depth or how
+the question arrived. This is homework-only behaviour: a single supporting diagram is produced for the
+session and reused across the walkthrough steps rather than re-generated at each phase.
 
 ```
-images / session = 1 (explanation)
-                 + avgSteps (demo steps)
-                 + avgSteps (your-turn steps)
-                 = 2 × avgSteps + 1
+images / session = 1   (fixed — one diagram per session)
 ```
 
-At the default **5 steps**, that is **11 images per session**. Because it scales with walkthrough depth,
-it grows with longer walkthroughs:
+Because it no longer scales with walkthrough depth, this line is flat and small:
 
-| Walkthrough depth (steps) | Images / session (`2×steps + 1`) | Cost (list @ $0.067) | Cost (+50%) |
-|---|---|---|---|
-| 3 | 7 | $0.469 | $0.704 |
-| **5 (default)** | **11** | **$0.737** | **$1.106** |
-| 7 | 15 | $1.005 | $1.508 |
-| 10 (max) | 21 | $1.407 | $2.111 |
+| Images / session | Cost (list @ $0.067) | Cost (+15%) |
+|---|---|---|
+| **1 (fixed)** | **$0.067** | **$0.077** |
 
-> **This is now the single largest line in a session.** At the default depth, image generation is **$0.74
-> list / $1.11 buffered** — more than audio. If in practice not every step renders a fresh image (e.g. some
-> are cached or reused), lower the step-image assumption and this line drops proportionally.
+> **This is now the smallest provider line in a session.** At one image, generation is **$0.067 list /
+> $0.077 buffered** — well below audio and the o3 reasoning cost. If in future the flow needs more than one
+> diagram per session, raise the image assumption in the estimator and this line scales linearly.
 
 ---
 
@@ -118,7 +111,7 @@ match): **$0.0118**.
 ```
 o3 input :  7,160 tok ÷ 1,000,000 × $2  = $0.0143
 o3 output: 20,975 tok ÷ 1,000,000 × $8  = $0.1678
-o3 total (list)                          = $0.1821  →  +50% = $0.2732
+o3 total (list)                          = $0.1821  →  +15% = $0.2094
 ```
 
 ### 4.3 Why o3 can look cheaper than the docs — hidden reasoning tokens
@@ -127,14 +120,14 @@ o3 total (list)                          = $0.1821  →  +50% = $0.2732
 reasoning tokens at the **output** rate. OpenAI's documentation notes a single o3 answer can burn
 **5,000–20,000 internal reasoning tokens**. Our model already assumes ~21,000 o3 output tokens for a whole
 calculation session (near the high end), but if o3 reasons *harder*, cost scales. This table shows a full
-calculation session (including the max-audio $0.60 and the 11-image $0.737 lines) as reasoning load rises:
+calculation session (including the max-audio $0.60 and the one-image $0.067 lines) as reasoning load rises:
 
-| o3 reasoning load | o3 output tok / session | Calc session (list) | Calc session (+50%) |
+| o3 reasoning load | o3 output tok / session | Calc session (list) | Calc session (+15%) |
 |---|---|---|---|
-| **As modelled** | ~21,000 | $1.531 | **$2.297** |
-| 1.5× harder | ~31,500 | $1.615 | $2.423 |
-| 2× harder | ~42,000 | $1.699 | $2.549 |
-| 3× harder | ~63,000 | $1.867 | $2.801 |
+| **As modelled** | ~21,000 | $0.861 | **$0.990** |
+| 1.5× harder | ~31,500 | $0.945 | $1.087 |
+| 2× harder | ~42,000 | $1.029 | $1.183 |
+| 3× harder | ~63,000 | $1.197 | $1.377 |
 
 > The o3 output-token counts are **editable** in the estimator's *Advanced assumptions* — tune them to a
 > sample of real billed sessions and the estimate tracks reality.
@@ -143,38 +136,36 @@ calculation session (including the max-audio $0.60 and the 11-image $0.737 lines
 
 ## 5. Full homework-session confirmation table
 
-Per-session cost by service, with **audio at the 24,000-char maximum** and **11 real-time images**
-(default 5 steps). **Calculation** sessions use o3; **explanation** sessions use gpt-4.1; the **blended**
-row is the estimator default (50/50, image intake, audio on).
+Per-session cost by service, with **audio at the 24,000-char maximum** and **one real-time image**.
+**Calculation** sessions use o3; **explanation** sessions use gpt-4.1; the **blended** row is the estimator
+default (50/50, image intake, audio on).
 
-| Session type | o3 | gpt-4.1 | Gemini images (×11) | Inworld audio (max) | **Total (list)** | **Total (+50%)** |
+| Session type | o3 | gpt-4.1 | Gemini image (×1) | Inworld audio (max) | **Total (list)** | **Total (+15%)** |
 |---|---|---|---|---|---|---|
-| Calculation (o3) | $0.182 | $0.012 | $0.737 | $0.600 | **$1.531** | **$2.297** |
-| Explanation (gpt-4.1) | — | $0.070 | $0.737 | $0.600 | **$1.407** | **$2.111** |
-| **Blended (default)** | $0.091 | $0.041 | $0.737 | $0.600 | **$1.469** | **$2.204** |
+| Calculation (o3) | $0.182 | $0.012 | $0.067 | $0.600 | **$0.861** | **$0.990** |
+| Explanation (gpt-4.1) | — | $0.070 | $0.067 | $0.600 | **$0.737** | **$0.848** |
+| **Blended (default)** | $0.091 | $0.041 | $0.067 | $0.600 | **$0.799** | **$0.919** |
 
 Every number is reproducible from Sections 2–4 with the published unit prices — that is the confirmation:
-**provider price × quantity = the estimator's figure.** Image generation and audio together are ~85% of a
-session, because both are costed at their conservative maximum.
+**provider price × quantity = the estimator's figure.** Audio alone is now ~70–80% of a session, because it
+is costed at its conservative maximum; the single image line is minor.
 
 ---
 
 ## 6. Scaling to volume (monthly / yearly)
 
-Using the **blended buffered** cost of **$2.204** per session, scaled by each preset's monthly session
-count (the *range* uses the explanation-only and calculation-only bounds, $2.111 → $2.297):
+Using the **blended buffered** cost of **$0.919** per session, scaled by each preset's monthly session
+count (the *range* uses the explanation-only and calculation-only bounds, $0.848 → $0.990):
 
 | Preset | Students × questions | Sessions / month | Monthly (blended) | Yearly (blended) | Monthly range |
 |---|---|---|---|---|---|
-| **Reset to defaults** | 200 × 10 | 2,000 | **$4,408** | **$52,896** | $4,222 – $4,594 |
-| **Light usage** | 300 × 20 | 6,000 | **$13,224** | **$158,688** | $12,666 – $13,782 |
-| **Heavy usage** | 600 × 40 | 24,000 | **$52,896** | **$634,752** | $50,664 – $55,128 |
+| **Reset to defaults** | 200 × 10 | 2,000 | **$1,838** | **$22,056** | $1,696 – $1,980 |
+| **Light usage** | 300 × 20 | 6,000 | **$5,514** | **$66,168** | $5,088 – $5,940 |
+| **Heavy usage** | 600 × 40 | 24,000 | **$22,056** | **$264,672** | $20,352 – $23,760 |
 
-*Monthly figures use the blended-default per-session cost; the Light/Heavy presets also raise walkthrough
-depth (more steps → more images and narration), so their true per-session cost is a little higher — treat
-these as a lower-middle estimate. The two levers that move these most: the **step-image assumption**
-(Section 3 — fewer images per step if some are cached) and the **Inworld tier** (a $1,500/mo commit halves
-the audio line).*
+*Monthly figures use the blended-default per-session cost. The two levers that move these most: the
+**Inworld tier** (a $1,500/mo commit more than halves the audio line, the dominant cost) and the **o3
+reasoning-token count** (Section 4.3).*
 
 ---
 
@@ -182,18 +173,16 @@ the audio line).*
 
 1. **Unit prices are correct and current** (verified July 2026) — o3 & gpt-4.1 at $2/$8 per 1M tokens,
    Gemini image at $0.067, Inworld TTS-2 at $25 per 1M characters on-demand.
-2. **Image generation is now the largest line** — a real-time diagram at every walkthrough step of every
-   session (`2×steps + 1` ≈ 11 images at default depth) = **$0.74 list / $1.11 buffered**. This reflects
-   that images are created live at each phase, not once per upload.
-3. **Audio is billed at the maximum narration length** (24,000 chars ≈ $0.60 / $0.90).
-4. **Everything carries a +50% buffer** and audio is priced on Inworld's most expensive on-demand tier, so
+2. **Audio is now the largest line** — billed at the maximum narration length (24,000 chars ≈ $0.60 list /
+   $0.69 buffered).
+3. **Image generation is a single diagram per session** — one Gemini image ≈ **$0.067 list / $0.077
+   buffered**, a minor line that no longer scales with walkthrough depth.
+4. **Everything carries a +15% buffer** and audio is priced on Inworld's most expensive on-demand tier, so
    the estimate is deliberately conservative.
-5. **Validate two things on real usage:** (a) whether every step truly generates a fresh image or some are
-   cached/reused — this is the biggest single assumption; and (b) o3's reasoning-token count (Section 4.3).
+5. **Validate two things on real usage:** (a) the **maximum narrated characters** per session vs. the
+   24,000-char ceiling — the dominant line; and (b) o3's reasoning-token count (Section 4.3).
 
 ### Recommended checks before committing to a budget
-- Count the **actual images generated** in a sample of real sessions vs. the `2×steps + 1` assumption; if
-  some steps reuse a cached image, lower the assumption and the (dominant) image line falls proportionally.
 - Confirm the **maximum narrated characters** per session vs. the 24,000-char ceiling.
 - Pull the **actual o3 output-token count** from a dozen real calculation sessions vs. ~21,000/session.
 - Decide the Inworld **commitment tier** (on-demand $25 → $1,500/mo commit $12.50 halves audio).
