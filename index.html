@@ -614,34 +614,7 @@
     </table>
   </div>
 
-  <!-- ============ COMBINED · HOMEWORK SESSION + LESSON (per-unit cost) ============ -->
-  <div class="section-band">
-    <div class="eyebrow">Combined · per-unit running cost</div>
-    <h2>Homework session &amp; lesson build — combined</h2>
-    <p>The two dynamic per-unit costs of the app in one place: what one <strong>homework session</strong>
-    costs to run, and what one <strong>lesson</strong> costs to generate. Different units — per
-    student-question vs. per lesson built — shown together for an at-a-glance comparison.</p>
-  </div>
-
-  <div class="card">
-    <div class="comb-cards">
-      <div class="ehc primary">
-        <div class="ehc-lab">Homework Help · per session</div>
-        <div class="ehc-num" id="combHwSession">$0</div>
-        <div class="ehc-note">one student, one question, start to finish</div>
-      </div>
-      <div class="ehc">
-        <div class="ehc-lab">Lesson Content · per lesson</div>
-        <div class="ehc-num">$2.21 – $3.01</div>
-        <div class="ehc-note">one lesson generated (gpt-4.1, no images)</div>
-      </div>
-    </div>
-    <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1 (buffer included);
-    the lesson figure is the per-lesson total from Part 2. A homework session is billed <strong>every time</strong> a
-    student works a question; a lesson is billed <strong>once</strong>, when it is generated.</p>
-  </div>
-
-  <!-- ============ ONE-OFF · FULL CURRICULUM BUILD ============ -->
+  <!-- ============ ONE-OFF · FULL CURRICULUM BUILD (part of Lesson Content) ============ -->
   <div class="section-band">
     <div class="eyebrow">One-off · whole curriculum</div>
     <h2>Full curriculum build — KS3 + KS4 total</h2>
@@ -691,6 +664,45 @@
     higher than lessons × the per-lesson estimate in Part 2, which excludes images. The combined total is the sum of
     the two Key-Stage totals. Biology KS4 was not in the source curriculum count, so it is left blank here rather than
     estimated.</p>
+  </div>
+
+  <!-- ============ SUMMARY · EVERYTHING IN ONE PLACE ============ -->
+  <div class="section-band">
+    <div class="eyebrow">Summary · everything in one place</div>
+    <h2>Homework session &amp; lesson build — combined</h2>
+    <p>Every cost in the app at a glance: the two dynamic per-unit costs — one <strong>homework session</strong>
+    and one <strong>lesson</strong> built — their combined total, and the one-off cost to build the whole
+    curriculum. Different units, shown together for a single overview.</p>
+  </div>
+
+  <div class="card">
+    <div class="comb-cards">
+      <div class="ehc primary">
+        <div class="ehc-lab">Homework Help · per session</div>
+        <div class="ehc-num" id="combHwSession">$0</div>
+        <div class="ehc-note">one student, one question, start to finish</div>
+      </div>
+      <div class="ehc">
+        <div class="ehc-lab">Lesson Content · per lesson</div>
+        <div class="ehc-num">$2.21 – $3.01</div>
+        <div class="ehc-note">one lesson generated (gpt-4.1, no images)</div>
+      </div>
+      <div class="ehc">
+        <div class="ehc-lab">Both dynamic units · combined</div>
+        <div class="ehc-num" id="combDynTotal">$0</div>
+        <div class="ehc-note">one homework session + one lesson built</div>
+      </div>
+      <div class="ehc">
+        <div class="ehc-lab">One-off curriculum build · total</div>
+        <div class="ehc-num">$2,410.8 – $2,881.2</div>
+        <div class="ehc-note">every KS3 + KS4 lesson, once (incl. ~30 images/lesson)</div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1 (buffer included).
+    A homework session is billed <strong>every time</strong> a student works a question; a lesson is billed
+    <strong>once</strong> when generated. The <strong>combined</strong> card sums the two per-unit costs (different
+    units, shown together); the <strong>curriculum build</strong> is the one-off total to generate every lesson,
+    images included.</p>
   </div>
 
   <!-- ============ ADVANCED ============ -->
@@ -791,6 +803,9 @@ const SERVICES = {
 
 // Safety buffer applied to every provider price (invisible — inputs still show published rates).
 const PRICE_BUFFER = 1.15;
+// Static per-lesson generation cost bounds (gpt-4.1, no images) — mirrors the Lesson Content table.
+// Used by the summary "combined" card to add the live homework-session cost to a lesson build.
+const LESSON_PER_LOW = 2.21, LESSON_PER_HIGH = 3.01;
 
 const $ = id => document.getElementById(id);
 const fmt = (n, d=2) => n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -963,9 +978,15 @@ function updateExecCards(s, r){
   $("svcReason").textContent = "$"+fmt(r.svc.o3 + r.svc.gpt, 3);
   $("svcTts").textContent    = "$"+fmt(r.svc.inworld, 3);
   $("svcImg").textContent    = "$"+fmt(r.svc.gemini, 3);
-  // combined per-unit section — homework session cost mirrors the exec per-session figure
+  // summary section — homework session cost mirrors the exec per-session figure
   const combHw = $("combHwSession");
   if(combHw) combHw.textContent = "$"+fmt(r.perSession,3);
+  // combined-total card = live homework session + the static per-lesson range ($2.21–$3.01)
+  const combTot = $("combDynTotal");
+  if(combTot){
+    const lo = r.perSession + LESSON_PER_LOW, hi = r.perSession + LESSON_PER_HIGH;
+    combTot.textContent = "$"+fmt(lo,2)+" – $"+fmt(hi,2);
+  }
 }
 
 function render(){
