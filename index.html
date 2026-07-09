@@ -233,6 +233,29 @@
   .cc-grand .g-lab{font-size:13px;color:var(--ink-dim)}
   .cc-grand .g-lab strong{color:var(--ink)}
   .cc-grand .g-num{font-family:var(--mono);font-size:19px;font-weight:750;color:var(--accent)}
+
+  /* ===== Overview — the two cost areas of the app ===== */
+  .overview{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:8px 0 6px}
+  @media(max-width:820px){.overview{grid-template-columns:1fr}}
+  .ov-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+  .ov-card .ov-tag{display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    font-family:var(--mono);padding:3px 9px;border-radius:999px;border:1px solid var(--line);
+    color:var(--ink-dim);margin-bottom:12px}
+  .ov-card.dynamic{border-color:#2f6187;background:linear-gradient(155deg,#132433,#12171f)}
+  .ov-card.dynamic .ov-tag{color:var(--accent);border-color:#2f6187}
+  .ov-card h3{font-size:16px;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+  .ov-card p{color:var(--ink-dim);font-size:13px;margin:0;line-height:1.55}
+
+  /* ===== Section band — big divider heading between the two cost parts ===== */
+  .section-band{margin:40px 0 18px;padding-top:24px;border-top:1px solid var(--line)}
+  .section-band.first{margin-top:26px}
+  .section-band .eyebrow{margin-bottom:6px}
+  .section-band h2{font-size:22px;font-weight:750;letter-spacing:-.02em;margin:0 0 6px}
+  .section-band p{color:var(--ink-dim);font-size:13.5px;max-width:760px;margin:0}
+
+  /* ===== Combined per-unit cost cards (homework session + lesson) ===== */
+  .comb-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.comb-cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -254,6 +277,32 @@
     </div>
   </header>
 
+  <!-- ============ OVERVIEW — the two cost areas of the app ============ -->
+  <section class="overview">
+    <div class="ov-card dynamic">
+      <span class="ov-tag">Dynamic · real-time</span>
+      <h3>1 · Homework Help</h3>
+      <p>Cost is incurred <strong>live, per session</strong>, as each student works a question through the
+      full flow (extract → walkthrough → attempts → audio). This is the running cost that scales with usage —
+      modelled by the dials below.</p>
+    </div>
+    <div class="ov-card">
+      <span class="ov-tag">One-off · per lesson</span>
+      <h3>2 · Lesson Content Generation</h3>
+      <p>Cost to <strong>pre-generate each lesson</strong> once (script, audio and helpers).
+      Paid up front when a lesson is built, not per student — estimated per lesson and for the whole KS3 + KS4
+      curriculum further down.</p>
+    </div>
+  </section>
+
+  <!-- ============ PART 1 · HOMEWORK HELP (dynamic running cost) ============ -->
+  <div class="section-band first">
+    <div class="eyebrow">Part 1 · dynamic running cost</div>
+    <h2>Homework Help — cost per session</h2>
+    <p>The real-time cost of the homework flow. Set the two dials to match your rollout; every figure updates
+    instantly. Use the presets for quick light / heavy scenarios.</p>
+  </div>
+
   <div class="toolbar toolbar-top">
     <button class="btn" id="btnReset">↺ Reset to defaults</button>
     <button class="btn" id="btnLow">Light usage preset</button>
@@ -265,9 +314,8 @@
     <div class="eyebrow">For management &amp; stakeholders</div>
     <div class="exec-title">What Homework Help costs to run</div>
     <p class="exec-sub">Set the two dials below to match your rollout and every figure updates instantly. The detailed
-    engineering controls that drive these numbers are further down the page. <strong>Note:</strong> this page now covers
-    <strong>both</strong> costs — the per-session <em>homework</em> running cost (the dials below) and the one-off
-    <em>lesson-content build</em> cost (the "Content generation cost" section further down).</p>
+    engineering controls that drive these numbers are further down the page. This is the <strong>dynamic, per-session</strong>
+    cost — the one-off <em>lesson-content build</em> cost is covered in Part 2 below.</p>
 
     <div class="exec-dials">
       <div class="exec-dial">
@@ -329,7 +377,7 @@
         <div class="eact part">
           <div class="ei">🖼️</div>
           <div class="en">Diagram generation</div>
-          <div class="ed">A real-time image at every step — <span id="svcImgCount">11</span> per session</div>
+          <div class="ed">One diagram image generated per session</div>
           <div class="ec" id="svcImg">$0</div>
           <div class="tag">per session</div>
         </div>
@@ -424,12 +472,11 @@
         </div>
 
         <div class="ctrl" id="diagramCtrl" style="margin-top:16px">
-          <label><span class="lbl" id="diagramLbl">If it's an upload, does it contain a diagram?<small>informational only — images now render at every step regardless</small></span><span class="v" id="vDiagram">50%</span></label>
+          <label><span class="lbl" id="diagramLbl">If it's an upload, does it contain a diagram?<small>informational only — one image is generated per session regardless</small></span><span class="v" id="vDiagram">50%</span></label>
           <input type="range" id="pctDiagram" min="0" max="100" step="5" value="50">
         </div>
-        <p class="note" style="margin-top:6px">Diagram images are generated <strong>in real time at every walkthrough
-        step of every session</strong> (1 explanation + 2×steps), so image cost no longer depends on whether the
-        upload has a figure. This slider is kept for reference only.</p>
+        <p class="note" style="margin-top:6px">Homework Help generates <strong>one diagram image per session</strong>,
+        regardless of walkthrough depth or whether the upload contains a figure. This slider is kept for reference only.</p>
       </div>
 
       <div class="card detail-only">
@@ -542,26 +589,68 @@
     </div>
   </div>
 
-  <!-- ============ LESSON CONTENT GENERATION COST ============ -->
-  <div class="card contentcost" id="contentCost">
-    <h2><span class="num">＄</span> Lesson content generation cost</h2>
-    <p class="hint">A <strong>separate</strong> cost from the homework running cost above: the price to pre-generate
-    all KS3 &amp; KS4 lesson content (script, TTS audio, 30 whiteboard images and helpers per lesson). Every subject
-    is costed on the most expensive content model, <strong>gpt-4.1</strong>.</p>
+  <!-- ============ PART 2 · LESSON CONTENT GENERATION (cost per lesson) ============ -->
+  <div class="section-band">
+    <div class="eyebrow">Part 2 · dynamic build cost</div>
+    <h2>Lesson Content Generation — cost per lesson</h2>
+    <p>What it takes to generate <strong>one lesson</strong> during the lesson flow — script, TTS audio and
+    helpers (no images). Every subject is costed on the most expensive content model, gpt-4.1.</p>
+  </div>
 
-    <div class="cc-sub">Estimated cost per lesson</div>
+  <div class="card contentcost" id="lessonPerCost">
+    <h2><span class="num">＄</span> Estimated cost per lesson</h2>
+    <p class="hint">The per-lesson cost of generating content — script, TTS audio and helpers. Costed on
+    <strong>gpt-4.1</strong>, the most expensive content model. <strong>No images are generated during lesson
+    generation</strong>, so there is no image cost.</p>
     <table>
       <thead><tr>
         <th>Content model</th><th class="r">TTS</th><th class="r">Content LLM</th>
-        <th class="r">Image gen (×30)</th><th class="r">Helpers</th><th class="r">Total / lesson</th>
+        <th class="r">Helpers</th><th class="r">Total / lesson</th>
       </tr></thead>
       <tbody>
-        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">$2.25 – $3.0</td><td class="r">$1.05 – $1.5</td>
-          <td class="r">~$2.84</td><td class="r">~$0.02</td><td class="r cost">≈ $6.15 – $7.35</td></tr>
+        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">$1.50 – $2.00</td><td class="r">$0.70 – $1.00</td>
+          <td class="r">~$0.01</td><td class="r cost">≈ $2.21 – $3.01</td></tr>
       </tbody>
     </table>
+  </div>
 
-    <div class="cc-sub cc-sub-major">One-off cost to generate the full curriculum — by Key Stage</div>
+  <!-- ============ COMBINED · HOMEWORK SESSION + LESSON (per-unit cost) ============ -->
+  <div class="section-band">
+    <div class="eyebrow">Combined · per-unit running cost</div>
+    <h2>Homework session &amp; lesson build — combined</h2>
+    <p>The two dynamic per-unit costs of the app in one place: what one <strong>homework session</strong>
+    costs to run, and what one <strong>lesson</strong> costs to generate. Different units — per
+    student-question vs. per lesson built — shown together for an at-a-glance comparison.</p>
+  </div>
+
+  <div class="card">
+    <div class="comb-cards">
+      <div class="ehc primary">
+        <div class="ehc-lab">Homework Help · per session</div>
+        <div class="ehc-num" id="combHwSession">$0</div>
+        <div class="ehc-note">one student, one question, start to finish</div>
+      </div>
+      <div class="ehc">
+        <div class="ehc-lab">Lesson Content · per lesson</div>
+        <div class="ehc-num">$2.21 – $3.01</div>
+        <div class="ehc-note">one lesson generated (gpt-4.1, no images)</div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1 (buffer included);
+    the lesson figure is the per-lesson total from Part 2. A homework session is billed <strong>every time</strong> a
+    student works a question; a lesson is billed <strong>once</strong>, when it is generated.</p>
+  </div>
+
+  <!-- ============ ONE-OFF · FULL CURRICULUM BUILD ============ -->
+  <div class="section-band">
+    <div class="eyebrow">One-off · whole curriculum</div>
+    <h2>Full curriculum build — KS3 + KS4 total</h2>
+    <p>The one-off cost to generate every lesson across the KS3 and KS4 curriculum, by Key Stage and subject.
+    This build <strong>includes whiteboard image generation</strong> (~30 images per lesson), so it is higher
+    than the per-lesson lesson-flow estimate in Part 2.</p>
+  </div>
+
+  <div class="card contentcost" id="contentCost">
     <div class="cc-two">
       <div>
         <div class="cc-sub">Key Stage 3</div>
@@ -597,9 +686,11 @@
       <div class="g-lab"><strong>Whole curriculum</strong> — KS3 + KS4 combined · 69 units · 392 lessons</div>
       <div class="g-num">$2,410.8 – $2,881.2</div>
     </div>
-    <p class="note" style="margin-top:12px">Every subject costed on gpt-4.1 (the most expensive content model). The
-    combined total is the sum of the two Key-Stage totals. Biology KS4 was not in the source curriculum count, so it is
-    left blank here rather than estimated.</p>
+    <p class="note" style="margin-top:12px">Every subject costed on gpt-4.1 (the most expensive content model), and
+    each lesson here <strong>includes ~30 whiteboard images (~$2.84/lesson)</strong> — this is why the build total is
+    higher than lessons × the per-lesson estimate in Part 2, which excludes images. The combined total is the sum of
+    the two Key-Stage totals. Biology KS4 was not in the source curriculum count, so it is left blank here rather than
+    estimated.</p>
   </div>
 
   <!-- ============ ADVANCED ============ -->
@@ -823,10 +914,9 @@ function compute(s){
   // moderation — free, runs every session (1 call) but $0; show as a (free) line
   svc.free += 0;
 
-  // visuals — Gemini, generated in real time at EVERY phase of EVERY session (not gated on uploads).
-  // One image per displayed walkthrough step: the 3A explanation + each demo step + each your-turn step.
-  const uploadFrac = s.fImage + s.fDoc;
-  const imagesPerSession = 2*s.avgSteps + 1;   // 1 (explanation) + avgSteps (demo) + avgSteps (your-turn)
+  // visuals — Gemini. Homework Help generates exactly ONE diagram image per session, regardless of
+  // walkthrough depth or how the question arrived (this is homework-only behaviour).
+  const imagesPerSession = 1;
   const visualPerSession = imagesPerSession * s.price.gemImg;
   svc.gemini += visualPerSession;
   phase.Visuals += visualPerSession;
@@ -873,7 +963,9 @@ function updateExecCards(s, r){
   $("svcReason").textContent = "$"+fmt(r.svc.o3 + r.svc.gpt, 3);
   $("svcTts").textContent    = "$"+fmt(r.svc.inworld, 3);
   $("svcImg").textContent    = "$"+fmt(r.svc.gemini, 3);
-  $("svcImgCount").textContent = r.imagesPerSession;
+  // combined per-unit section — homework session cost mirrors the exec per-session figure
+  const combHw = $("combHwSession");
+  if(combHw) combHw.textContent = "$"+fmt(r.perSession,3);
 }
 
 function render(){
@@ -980,7 +1072,7 @@ function render(){
     + `(5 fixed build calls + classification + intake + ${s.avgAtt} attempts + ${s.avgAsk} follow-ups, `
     + `A/B/C ×${fmt(s.retry,2)} retry). Plus 1 free moderation call`
     + (s.audioOn?`, audio, ` : `, `)
-    + `and ${r.imagesPerSession} real-time Gemini images (one per walkthrough step: 1 + 2×${s.avgSteps}).`;
+    + `and ${r.imagesPerSession} Gemini image per session.`;
 }
 
 // ── presets ──────────────────────────────────────────────────────────────────
