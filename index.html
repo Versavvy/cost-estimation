@@ -514,9 +514,9 @@
         <h2><span class="num">5</span> Audio (Inworld TTS-2)</h2>
         <p class="hint">Charged per character. Audio narrates the 3A explanation, every solution &amp; demo step,
         the intros / completion, and each piece of feedback / Q&amp;A reply. <strong>Audio is costed on the
-        <em>maximum</em> narration length</strong> (every driver below at its ceiling ≈ 24,000 chars/session),
-        since real homework narration runs far longer than a typical figure — so the sliders below define the
-        ceiling used, not a lower "typical" value.</p>
+        <em>measured average</em> narration length</strong> — measured across real homework sessions — and is
+        <strong>route-specific</strong>: calculation (o3) sessions narrate far less than prose (gpt-4.1)
+        explanation sessions. The blended figure follows your calculation / explanation mix above.</p>
 
         <div class="toggle-row" style="margin-bottom:16px">
           <span style="font-size:13.5px">Generate audio for the walkthrough</span>
@@ -526,20 +526,12 @@
         <div id="audioControls">
           <div class="grid2">
             <div class="ctrl">
-              <label><span class="lbl">Chars / step</span><span class="v" id="vCps">220</span></label>
-              <input type="range" id="charsStep" min="80" max="500" step="10" value="220">
+              <label><span class="lbl">Calculation chars / session<small>o3 route — measured avg</small></span><span class="v" id="vCalcChars">4,758</span></label>
+              <input type="range" id="charsCalc" min="1000" max="24000" step="100" value="4758">
             </div>
             <div class="ctrl">
-              <label><span class="lbl">Chars / 3A explanation</span><span class="v" id="vCex">320</span></label>
-              <input type="range" id="charsExp" min="100" max="800" step="20" value="320">
-            </div>
-            <div class="ctrl">
-              <label><span class="lbl">Fixed overhead chars<small>intros + completion</small></span><span class="v" id="vCov">400</span></label>
-              <input type="range" id="charsOv" min="0" max="1200" step="50" value="400">
-            </div>
-            <div class="ctrl">
-              <label><span class="lbl">Chars / feedback + Q&amp;A</span><span class="v" id="vCfb">220</span></label>
-              <input type="range" id="charsFb" min="60" max="600" step="20" value="220">
+              <label><span class="lbl">Explanation chars / session<small>gpt-4.1 route — measured avg</small></span><span class="v" id="vExplChars">12,611</span></label>
+              <input type="range" id="charsExpl" min="1000" max="24000" step="100" value="12611">
             </div>
           </div>
           <p class="note" id="audioCharNote"></p>
@@ -736,14 +728,14 @@
         <div class="price-cell">
           <div class="pt"><span class="dot inworld"></span> Inworld TTS-2</div>
           <div class="pr">
-            <label><span>$ / 1M chars</span><input type="number" id="tts_char" value="25" step="0.5" min="0"></label>
+            <label><span>$ / 1M chars</span><input type="number" id="tts_char" value="17" step="0.5" min="0"></label>
           </div>
         </div>
       </div>
       <p class="note">Defaults verified against live published pricing (June 2026): o3 &amp; gpt-4.1 both
       <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image (Nano-Banana-2) <strong>$0.10 per
-      image</strong> (conservative round-up from the ~$0.067 standard-tier list); Inworld TTS-2 <strong>$25 per 1M characters on demand</strong>
-      — falling to $15 (at $300/mo), $12.50 (at $1,500/mo), and $10 at enterprise scale. omni-moderation is free.
+      image</strong> (conservative round-up from the ~$0.067 standard-tier list); Inworld TTS-2 <strong>$17 per 1M characters (Developer plan)</strong>
+      — dropping further at higher commit tiers and to ~$10 at enterprise scale. omni-moderation is free.
       Cached input on the OpenAI models is ~$0.50/1M; the Batch API is ~50% off. <strong>If you have negotiated or
       volume rates, type them in — these are list prices, not your invoice.</strong></p>
 
@@ -807,6 +799,11 @@ const PRICE_BUFFER = 1.15;
 // Static per-lesson generation cost bounds (gpt-4.1, no images) — mirrors the Lesson Content table.
 // Used by the summary "combined" card to add the live homework-session cost to a lesson build.
 const LESSON_PER_LOW = 2.21, LESSON_PER_HIGH = 3.01;
+// Measured AVERAGE TTS characters per session (homework_tts_summary.pdf — 6 real sessions, 2026-07-10).
+// Route-specific: calculation (o3) sessions narrate far less than prose (gpt-4.1) explanation sessions.
+// These are the editable defaults for the two audio dials; the blended figure follows the calc/expl mix.
+const TTS_AVG_CALC = 4758;    // o3 route — Maths/Physics/Chemistry sums (measured mean, n=3)
+const TTS_AVG_EXPL = 12611;   // gpt-4.1 route — English/Biology prose (measured mean, n=3)
 
 const $ = id => document.getElementById(id);
 const fmt = (n, d=2) => n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -818,13 +815,6 @@ const money = (n) => n>=100 ? n.toLocaleString("en-US",{maximumFractionDigits:0}
 function readState(){
   const uCount = Math.max(1, Math.floor(+$("exUsersNum").value || 1));
   const qCount = Math.max(1, Math.floor(+$("exSpuNum").value || 1));
-  // Maximum characters a session's audio can produce — every audio driver at its slider ceiling.
-  // charsExp + (avgSteps × charsStep × 2) + charsOv + ((avgAtt + avgAsk) × charsFb)
-  const mx = id => +$(id).max;
-  const maxAudioChars = mx("charsExp")
-    + mx("avgSteps") * mx("charsStep") * 2
-    + mx("charsOv")
-    + (mx("avgAtt") + mx("avgAsk")) * mx("charsFb");
   const s = {
     users:     uCount,
     spu:       qCount,
@@ -841,11 +831,8 @@ function readState(){
     avgAtt:    +$("avgAtt").value,
     avgAsk:    +$("avgAsk").value,
     audioOn:   $("audioOn").checked,
-    charsStep: +$("charsStep").value,
-    charsExp:  +$("charsExp").value,
-    charsOv:   +$("charsOv").value,
-    charsFb:   +$("charsFb").value,
-    maxAudioChars,
+    charsCalc: +$("charsCalc").value,   // measured avg chars/session — o3 / calculation route
+    charsExpl: +$("charsExpl").value,   // measured avg chars/session — gpt-4.1 / explanation route
     price:{
       o3:{in:+$("o3_in").value*PRICE_BUFFER, out:+$("o3_out").value*PRICE_BUFFER},
       gpt:{in:+$("gpt_in").value*PRICE_BUFFER, out:+$("gpt_out").value*PRICE_BUFFER},
@@ -938,27 +925,32 @@ function compute(s){
   phase.Visuals += visualPerSession;
 
   // audio — Inworld, per character.
-  // Costed on the MAXIMUM narration length a session can produce (every audio driver at its ceiling),
-  // because real homework narration runs far longer than a "typical" figure. Decoupled from the depth /
-  // interaction sliders on purpose, so using the max here does NOT also inflate the LLM call counts.
-  const audioChars = s.audioOn ? s.maxAudioChars : 0;
-  const audioPerSession = audioChars/1e6 * s.price.ttsChar;
+  // Costed on the MEASURED AVERAGE narration length (homework_tts_summary.pdf), and route-specific:
+  // calculation (o3) sessions narrate ~4,758 chars, explanation (gpt-4.1) sessions ~12,611 chars.
+  // The blended figure follows the calc/explanation mix, so the max no longer inflates the average.
+  const calcAudioChars = s.audioOn ? s.charsCalc : 0;
+  const explAudioChars = s.audioOn ? s.charsExpl : 0;
+  const calcAudioPerSession = calcAudioChars/1e6 * s.price.ttsChar;
+  const explAudioPerSession = explAudioChars/1e6 * s.price.ttsChar;
+  const audioChars      = w*calcAudioChars      + x*explAudioChars;       // blended by question type
+  const audioPerSession = w*calcAudioPerSession + x*explAudioPerSession;
   svc.inworld += audioPerSession;
   phase.Audio += audioPerSession;
 
   const perSession = svc.o3+svc.gpt+svc.gemini+svc.inworld+svc.free;
 
   // pure single-type session totals (for the scenario cards) — includes its own intake/audio/visual share
-  function fullSession(route, branch){
+  function fullSession(route, branch, audioCost){
     let t = branch.svc.o3+branch.svc.gpt;            // llm
     t += visualPerSession;                           // visual (same — images every session)
-    t += audioPerSession;                            // audio (same)
+    t += audioCost;                                  // audio (route-specific measured average)
     return t;
   }
-  const calcSession = fullSession("o3", calc);
-  const explSession = fullSession("gpt", expl);
+  const calcSession = fullSession("o3", calc, calcAudioPerSession);
+  const explSession = fullSession("gpt", expl, explAudioPerSession);
 
-  return {svc, phase, perSession, calcSession, explSession, audioChars, imagesPerSession, blendLLM};
+  return {svc, phase, perSession, calcSession, explSession, audioChars,
+          calcAudioChars, explAudioChars, imagesPerSession, blendLLM};
 }
 
 // blended full-session cost if EVERY session used one given input method (for the exec cards)
@@ -1015,10 +1007,8 @@ function render(){
   $("vRetry").textContent = fmt(s.retry,2)+"×";
   $("vAtt").textContent   = s.avgAtt;
   $("vAsk").textContent   = s.avgAsk;
-  $("vCps").textContent   = s.charsStep;
-  $("vCex").textContent   = s.charsExp;
-  $("vCov").textContent   = s.charsOv;
-  $("vCfb").textContent   = s.charsFb;
+  $("vCalcChars").textContent = s.charsCalc.toLocaleString("en-US");
+  $("vExplChars").textContent = s.charsExpl.toLocaleString("en-US");
   $("mixWarn").classList.toggle("show", s.mixOff);
 
   // totals
@@ -1045,10 +1035,10 @@ function render(){
   $("audioControls").style.opacity = s.audioOn ? "1" : "0.4";
   $("audioControls").style.pointerEvents = s.audioOn ? "auto" : "none";
   $("audioCharNote").textContent = s.audioOn
-    ? `Costed on the MAXIMUM narration length: ${r.audioChars.toLocaleString("en-US")} characters per session `
-      + `(every audio driver at its ceiling — ${(+$("charsExp").max)} + ${(+$("avgSteps").max)}×${(+$("charsStep").max)}×2 steps + `
-      + `${(+$("charsOv").max)} overhead + (${(+$("avgAtt").max)}+${(+$("avgAsk").max)})×${(+$("charsFb").max)} feedback). `
-      + `The per-item sliders below are for reference — audio is always billed at this maximum.`
+    ? `Costed on the MEASURED AVERAGE narration length: ${Math.round(r.audioChars).toLocaleString("en-US")} characters `
+      + `for the blended session at the current mix `
+      + `(calculation ${s.charsCalc.toLocaleString("en-US")} · explanation ${s.charsExpl.toLocaleString("en-US")} chars/session, `
+      + `measured across real homework sessions).`
     : "Audio disabled — Inworld cost is $0.";
 
   // service bars
@@ -1100,8 +1090,8 @@ function render(){
 // ── presets ──────────────────────────────────────────────────────────────────
 const DEFAULTS = {exUsersNum:200,exSpuNum:10,pctCalc:50,mixMode:false,inmethod:"image",
   pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
-  avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsStep:220,charsExp:320,charsOv:400,charsFb:220,
-  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.1,tts_char:25};
+  avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsCalc:4758,charsExpl:12611,
+  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.1,tts_char:17};
 
 // Write preset values into the controls (no render).
 function setPresetInputs(p){
