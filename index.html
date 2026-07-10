@@ -593,17 +593,25 @@
     <h2><span class="num">＄</span> Estimated cost per lesson</h2>
     <p class="hint">The per-lesson cost of generating content — script, TTS audio and helpers. Costed on
     <strong>gpt-4.1</strong>, the most expensive content model. <strong>No images are generated during lesson
-    generation</strong>, so there is no image cost.</p>
+    generation</strong>, so there is no image cost. Audio is now costed on the <strong>measured average
+    narration length</strong>  at Inworld's <strong>$17 / 1M-character Developer
+    plan</strong>.</p>
     <table>
       <thead><tr>
-        <th>Content model</th><th class="r">TTS</th><th class="r">Content LLM</th>
+        <th>Content model</th><th class="r">TTS <small>(~24,700 chars)</small></th><th class="r">Content LLM</th>
         <th class="r">Helpers</th><th class="r">Total / lesson</th>
       </tr></thead>
       <tbody>
-        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">$1.50 – $2.00</td><td class="r">$0.70 – $1.00</td>
-          <td class="r">~$0.01</td><td class="r cost">≈ $2.21 – $3.01</td></tr>
+        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">~$0.48</td><td class="r">$0.70 – $1.00</td>
+          <td class="r">~$0.01</td><td class="r cost">≈ $1.19 – $1.49</td></tr>
       </tbody>
     </table>
+    <p class="note" style="margin-top:12px">Audio is costed on the <strong>measured average lesson narration
+    </strong> — all three mastery levels combined (~33 narration chunks + ~18 worked-example
+    steps + the intro greeting) — at Inworld's <strong>$17 / 1M-character Developer plan</strong>, giving
+    <strong>≈ $0.48/lesson</strong> of audio (down from the old $1.50–$2.00 line). This is the first-generation
+    (cold) cost — narration audio is cached globally by content hash, so every later read replays for free.
+    Content LLM ($0.70–$1.00) and helpers (~$0.01) are unchanged.</p>
   </div>
 
   <!-- ============ ONE-OFF · FULL CURRICULUM BUILD (part of Lesson Content) ============ -->
@@ -677,8 +685,8 @@
       </div>
       <div class="ehc">
         <div class="ehc-lab">Lesson Content · per lesson</div>
-        <div class="ehc-num">$2.21 – $3.01</div>
-        <div class="ehc-note">one lesson generated</div>
+        <div class="ehc-num">$1.19 – $1.49</div>
+        <div class="ehc-note">one lesson generated (~24,700 chars audio)</div>
       </div>
       <div class="ehc">
         <div class="ehc-lab">Both dynamic units · combined</div>
@@ -798,7 +806,9 @@ const SERVICES = {
 const PRICE_BUFFER = 1.15;
 // Static per-lesson generation cost bounds (gpt-4.1, no images) — mirrors the Lesson Content table.
 // Used by the summary "combined" card to add the live homework-session cost to a lesson build.
-const LESSON_PER_LOW = 2.21, LESSON_PER_HIGH = 3.01;
+// TTS grounded on the measured average narration (~24,700 chars/lesson) at Inworld's $17/1M Developer plan
+// (≈ $0.48 audio) + content LLM $0.70–$1.00 + helpers ~$0.01.
+const LESSON_PER_LOW = 1.19, LESSON_PER_HIGH = 1.49;
 // Measured AVERAGE TTS characters per session (homework_tts_summary.pdf — 6 real sessions, 2026-07-10).
 // Route-specific: calculation (o3) sessions narrate far less than prose (gpt-4.1) explanation sessions.
 // These are the editable defaults for the two audio dials; the blended figure follows the calc/expl mix.
@@ -974,7 +984,7 @@ function updateExecCards(s, r){
   // summary section — homework session cost mirrors the exec per-session figure
   const combHw = $("combHwSession");
   if(combHw) combHw.textContent = "$"+fmt(r.perSession,3);
-  // combined-total card = live homework session + the static per-lesson range ($2.21–$3.01)
+  // combined-total card = live homework session + the static per-lesson range ($1.19–$1.49)
   const combTot = $("combDynTotal");
   if(combTot){
     const lo = r.perSession + LESSON_PER_LOW, hi = r.perSession + LESSON_PER_HIGH;
