@@ -671,9 +671,9 @@
     <div class="eyebrow">Summary · everything in one place</div>
     <h2>Lesson feature &amp;  Homework feature costs -- combined</h2>
     <!-- <h2>Homework session lesson build — combined</h2> -->
-    <p>Every cost in the app at a glance: the two dynamic per-unit costs — one <strong>homework session</strong>
-    and one <strong>lesson</strong> built — their combined total, and the one-off cost to build the whole
-    curriculum. Different units, shown together for a single overview.</p>
+    <p>Every cost in the app at a glance: the dynamic per-use costs — one <strong>homework session</strong>,
+    one <strong>live lesson session</strong> per student, and one <strong>lesson built</strong> — plus the
+    one-off cost to build the whole curriculum. Different units, shown together for a single overview.</p>
   </div>
 
   <div class="card">
@@ -682,6 +682,11 @@
         <div class="ehc-lab">Homework Help · per session</div>
         <div class="ehc-num" id="combHwSession">$0</div>
         <div class="ehc-note">one student, one question, start to finish</div>
+      </div>
+      <div class="ehc">
+        <div class="ehc-lab">Live lesson session · per student</div>
+        <div class="ehc-num">$0.56</div>
+        <div class="ehc-note">live tutoring — voice + LLM, per student per lesson</div>
       </div>
       <div class="ehc">
         <div class="ehc-lab">Lesson Content · per lesson</div>
@@ -700,10 +705,12 @@
       </div>
     </div>
     <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1 (buffer included).
-    A homework session is billed <strong>every time</strong> a student works a question; a lesson is billed
-    <strong>once</strong> when generated. The <strong>combined</strong> card sums the two per-unit costs (different
-    units, shown together); the <strong>curriculum build</strong> is the one-off total to generate every lesson,
-    images included.</p>
+    The <strong>live lesson session</strong> is what it costs each time a student works through a lesson —
+    real-time tutor voice (~12,600 characters at Inworld's $17/1M Developer plan ≈ $0.25) plus the live tutoring
+    LLM (gpt-oss-120b + gpt-4o-mini ≈ $0.31) — grounded on a measured single-student live session. Homework and
+    live lesson sessions are billed <strong>every time</strong> a student engages; a lesson is built
+    <strong>once</strong>. The <strong>combined</strong> card sums one homework session + one lesson built; the
+    <strong>curriculum build</strong> is the one-off total to generate every lesson, images included.</p>
   </div>
 
   <!-- ============ ADVANCED ============ -->
