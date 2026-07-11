@@ -315,7 +315,7 @@
     <div class="exec-title">What Homework Help costs to run</div>
     <p class="exec-sub">Set the two dials below to match your rollout and every figure updates instantly. The detailed
     engineering controls that drive these numbers are further down the page. This is the <strong>dynamic, per-session</strong>
-    cost — the one-off <em>lesson-content build</em> cost is covered in Part 2 below.</p>
+    cost — the one-off <em>lesson-content build</em> cost is covered in the Full curriculum build below.</p>
 
     <div class="exec-dials">
       <div class="exec-dial">
@@ -581,44 +581,48 @@
     </div>
   </div>
 
-  <!-- ============ PART 2 · LESSON CONTENT GENERATION (cost per lesson) ============ -->
+  <!-- ============ PART 2 · LIVE LESSON SESSION (real-time cost per student) ============ -->
   <div class="section-band">
-    <div class="eyebrow">Part 2 · dynamic build cost</div>
-    <h2>Lesson Content Generation — cost per lesson</h2>
-    <p>What it takes to generate <strong>one lesson</strong> during the lesson flow — script, TTS audio and
-    helpers (no images). Every subject is costed on the most expensive content model, gpt-4.1.</p>
+    <div class="eyebrow">Part 2 · dynamic real-time cost</div>
+    <h2>Live lesson session — cost per student</h2>
+    <p>What it costs each time a student works through an <strong>already-built</strong> lesson — the real-time
+    tutor voice and the live LLM calls that engage the student (answer feedback, check-in questions, hints, quiz
+    explanations, misconceptions). Billed <strong>per student, every time</strong>. This is not lesson
+    generation — that one-off, all-subject build is the <strong>Full curriculum build</strong> below.</p>
   </div>
 
-  <div class="card contentcost" id="lessonPerCost">
-    <h2><span class="num">＄</span> Estimated cost per lesson</h2>
-    <p class="hint">The per-lesson cost of generating content — script, TTS audio and helpers. Costed on
-    <strong>gpt-4.1</strong>, the most expensive content model. <strong>No images are generated during lesson
-    generation</strong>, so there is no image cost. Audio is costed at Inworld's <strong>$17 / 1M-character
-    Developer plan</strong>.</p>
+  <div class="card contentcost" id="liveLessonCost">
+    <h2><span class="num">＄</span> Estimated cost per student / lesson</h2>
+    <p class="hint">The real-time cost of one student taking a lesson: <strong>live tutor voice</strong> streamed
+    per character (uncached, billed every time) plus the <strong>live tutoring LLM</strong> that reacts to the
+    student. Voice is costed at Inworld's <strong>$17 / 1M-character Developer plan</strong>; grounded on a
+    measured single-student live session.</p>
     <table>
       <thead><tr>
-        <th>Content model</th><th class="r">TTS</th><th class="r">Content LLM</th>
-        <th class="r">Helpers</th><th class="r">Total / lesson</th>
+        <th>Component</th><th>Provider / model</th><th class="r">Basis</th><th class="r">Cost / student</th>
       </tr></thead>
       <tbody>
-        <tr><td class="nm">gpt-4.1 (OpenAI)</td><td class="r">~$0.48</td><td class="r">$0.70 – $1.00</td>
-          <td class="r">~$0.01</td><td class="r cost">≈ $1.19 – $1.49</td></tr>
+        <tr><td class="nm">Live tutor voice</td><td>Inworld TTS-2</td>
+          <td class="r">~12,600 chars @ $17/1M</td><td class="r">~$0.25</td></tr>
+        <tr><td class="nm">Live tutoring LLM</td><td>gpt-oss-120b + gpt-4o-mini</td>
+          <td class="r">measured live session</td><td class="r">~$0.31</td></tr>
+        <tr class="tot"><td>Total / student</td><td></td><td class="r"></td><td class="r cost">≈ $0.56</td></tr>
       </tbody>
     </table>
-    <p class="note" style="margin-top:12px">Audio is costed at Inworld's <strong>$17 / 1M-character Developer
-    plan</strong>, giving <strong>≈ $0.48/lesson</strong> of audio (down from the old $1.50–$2.00 line). This is
-    the first-generation (cold) cost — narration audio is cached globally by content hash, so every later read
-    replays for free.
-    Content LLM ($0.70–$1.00) and helpers (~$0.01) are unchanged.</p>
+    <p class="note" style="margin-top:12px">The tutor voice is streamed live through the web app's own TTS proxy
+    (<code>/api/voice/tts</code>) — <strong>uncached and billed on every playback</strong>, unlike the
+    pre-generated lesson narration. The live LLM (answer evaluation, feedback, hints, quiz explanations, Q&amp;A)
+    runs mostly on <strong>gpt-oss-120b</strong> with short feedback on <strong>gpt-4o-mini</strong>. Both scale
+    with how much the student interacts, so <strong>≈ $0.56/student</strong> is a measured central estimate.</p>
   </div>
 
   <!-- ============ ONE-OFF · FULL CURRICULUM BUILD (part of Lesson Content) ============ -->
   <div class="section-band">
     <div class="eyebrow">One-off · whole curriculum</div>
     <h2>Full curriculum build — KS3 + KS4 total</h2>
-    <p>The one-off cost to generate every lesson across the KS3 and KS4 curriculum, by Key Stage and subject.
-    This build <strong>includes whiteboard image generation</strong> (~30 images per lesson), so it is higher
-    than the per-lesson lesson-flow estimate in Part 2.</p>
+    <p>The one-off cost to generate every lesson across the KS3 and KS4 curriculum, by Key Stage and subject —
+    costed on <strong>gpt-4.1</strong> (the most expensive content model). This build <strong>includes
+    whiteboard image generation</strong> (~30 images per lesson).</p>
   </div>
 
   <div class="card contentcost" id="contentCost">
@@ -658,10 +662,9 @@
       <div class="g-num">$2,410.8 – $2,881.2</div>
     </div>
     <p class="note" style="margin-top:12px">Every subject costed on gpt-4.1 (the most expensive content model), and
-    each lesson here <strong>includes ~30 whiteboard images (~$2.84/lesson)</strong> — this is why the build total is
-    higher than lessons × the per-lesson estimate in Part 2, which excludes images. The combined total is the sum of
-    the two Key-Stage totals. Biology KS4 was not in the source curriculum count, so it is left blank here rather than
-    estimated.</p>
+    each lesson here <strong>includes ~30 whiteboard images (~$2.84/lesson)</strong> plus its script, narration audio
+    and helpers. The combined total is the sum of the two Key-Stage totals. Biology KS4 was not in the source
+    curriculum count, so it is left blank here rather than estimated.</p>
   </div>
 
   <!-- ============ SUMMARY · EVERYTHING IN ONE PLACE ============ -->
