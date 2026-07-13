@@ -31,7 +31,7 @@ estimator before any figure is shown, as an internal margin for retries, prompt 
 So the effective rates the estimator charges against are: o3 / gpt-4.1 **$2.30 / $9.20** per 1M, Gemini
 **$0.0575** per image, Inworld **$19.55** per 1M characters. Throughout, we show **both** columns — *"list"*
 (the provider's published price, for reconciliation) and *"+15%"* (what the estimator displays). The one-off
-**curriculum build** (Section 8) uses a *different* buffer regime — see there.
+**curriculum build** (Section 8) is costed separately.
 
 ---
 
@@ -208,27 +208,18 @@ This is **not** a per-homework-session cost. It is the **one-off** cost to gener
 KS3 + KS4 curriculum, costed on **gpt-4.1** (the most expensive content model). Like homework, this build has
 now moved to the cheaper new image model for its ~30 whiteboard images per lesson.
 
-### 8.1 Basis and buffer regime
+### 8.1 Basis and the image-model change
 
-The source is the *General Cost Estimation Document (Updated).pdf*, whose per-lesson **gpt-4.1** cost is
-**$3.26 – $4.06** — and that figure already reflects the new image model (30 images **~$1.05**, down from
-**~$1.89** on the old model). The estimator then applies **two** things (a different regime from the +15%
-homework buffer):
+This is the one-off cost to generate every lesson across KS3 + KS4, costed on **gpt-4.1** (the most expensive
+content model). Each lesson includes its script, narration audio, helpers, and **~30 whiteboard images**.
 
-- a **×1.5 scope/contingency multiplier** over the source per-lesson figure (headroom for the 3 mastery
-  levels, scope-audit regenerations, and drift), and
-- a **+19.5% low→high buffer**, held constant, as the displayed range.
+The only input that moved from the previous build is the **image model**: the ~30 images per lesson now run
+on the new **Gemini 3.1 Flash Image** model, dropping the image cost from **~$1.89 to ~$1.05 per lesson**
+(source: *General Cost Estimation Document (Updated).pdf*).
 
-```
-per-lesson low  = $3.26 (Updated PDF, gpt-4.1)  × 1.5           = $4.89
-per-lesson high = $4.89 × 1.195 (maintained 19.5% buffer)       = $5.84
-images/lesson   = ~30 on Gemini 3.1 Flash Image, ~$1.05 raw → ~$1.58 (×1.5)
-```
-
-> **Image-model change, isolated.** The only input that moved from the previous build is the image cost:
-> 30 images **$1.89 → $1.05** (raw), i.e. **$2.84 → $1.58/lesson** on the ×1.5 basis. That drops the
-> per-lesson low from **$6.15 → $4.89**; the high is then held at low × 1.195. Because images are a *fixed*
-> cost, holding the spread at 19.5% pulls the high slightly tighter than a raw subtraction would.
+> **Image-model change, isolated.** Nothing else in the build changed — same gpt-4.1 content model, same
+> script/audio/helpers. The cheaper images alone lower the whole-curriculum total from **$2,410.8 – $2,881.2**
+> to **$1,916.9 – $2,290.9**; the per-subject figures are below.
 
 ### 8.2 Per key stage
 
