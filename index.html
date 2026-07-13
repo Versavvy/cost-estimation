@@ -63,6 +63,8 @@
 
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:520px){.grid2{grid-template-columns:1fr}}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+  @media(max-width:640px){.grid3{grid-template-columns:1fr}}
 
   .toggle-row{display:flex;align-items:center;justify-content:space-between;
     padding:10px 12px;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--radius-sm)}
@@ -271,7 +273,7 @@
     <div class="pill-row">
       <span class="pill"><span class="dot o3"></span> o3 — reasoning (calculation walkthroughs)</span>
       <span class="pill"><span class="dot gpt"></span> gpt-4.1 — prose, extraction &amp; classification</span>
-      <span class="pill"><span class="dot gemini"></span> Gemini 3.1 Flash Image — diagram visuals</span>
+      <span class="pill"><span class="dot gemini"></span> Gemini 3.1 Flash Image Light (Nano-Banana-Light) — diagram visuals</span>
       <span class="pill"><span class="dot inworld"></span> Inworld TTS-2 — audio</span>
       <span class="pill"><span class="dot free"></span> omni-moderation — free</span>
     </div>
@@ -632,12 +634,12 @@
         <table>
           <thead><tr><th>Subject</th><th class="r">Units</th><th class="r">Lessons</th><th class="r">Cost</th></tr></thead>
           <tbody>
-            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">57</td><td class="r cost">$350.6 – $419.0</td></tr>
-            <tr><td class="nm">English</td><td class="r">8</td><td class="r">27</td><td class="r cost">$166.1 – $198.5</td></tr>
-            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">43</td><td class="r cost">$264.5 – $316.1</td></tr>
-            <tr><td class="nm">Chemistry</td><td class="r">8</td><td class="r">32</td><td class="r cost">$196.8 – $235.2</td></tr>
-            <tr><td class="nm">Biology</td><td class="r">6</td><td class="r">38</td><td class="r cost">$233.7 – $279.3</td></tr>
-            <tr class="tot"><td>Total</td><td class="r">35</td><td class="r">197</td><td class="r cost">$1,211.6 – $1,448.0</td></tr>
+            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">57</td><td class="r cost">$278.7 – $333.1</td></tr>
+            <tr><td class="nm">English</td><td class="r">8</td><td class="r">27</td><td class="r cost">$132.0 – $157.8</td></tr>
+            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">43</td><td class="r cost">$210.3 – $251.3</td></tr>
+            <tr><td class="nm">Chemistry</td><td class="r">8</td><td class="r">32</td><td class="r cost">$156.5 – $187.0</td></tr>
+            <tr><td class="nm">Biology</td><td class="r">6</td><td class="r">38</td><td class="r cost">$185.8 – $222.1</td></tr>
+            <tr class="tot"><td>Total</td><td class="r">35</td><td class="r">197</td><td class="r cost">$963.3 – $1,151.3</td></tr>
           </tbody>
         </table>
       </div>
@@ -646,12 +648,12 @@
         <table>
           <thead><tr><th>Subject</th><th class="r">Units</th><th class="r">Lessons</th><th class="r">Cost</th></tr></thead>
           <tbody>
-            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">74</td><td class="r cost">$455.1 – $543.9</td></tr>
-            <tr><td class="nm">English</td><td class="r">11</td><td class="r">38</td><td class="r cost">$233.7 – $279.3</td></tr>
-            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">34</td><td class="r cost">$209.1 – $249.9</td></tr>
-            <tr><td class="nm">Chemistry</td><td class="r">10</td><td class="r">49</td><td class="r cost">$301.4 – $360.2</td></tr>
+            <tr><td class="nm">Mathematics</td><td class="r">6</td><td class="r">74</td><td class="r cost">$361.9 – $432.5</td></tr>
+            <tr><td class="nm">English</td><td class="r">11</td><td class="r">38</td><td class="r cost">$185.8 – $222.1</td></tr>
+            <tr><td class="nm">Physics</td><td class="r">7</td><td class="r">34</td><td class="r cost">$166.3 – $198.7</td></tr>
+            <tr><td class="nm">Chemistry</td><td class="r">10</td><td class="r">49</td><td class="r cost">$239.6 – $286.4</td></tr>
             <tr><td class="nm">Biology</td><td class="r">—</td><td class="r">—</td><td class="r">—</td></tr>
-            <tr class="tot"><td>Total</td><td class="r">34</td><td class="r">195</td><td class="r cost">$1,199.3 – $1,433.3</td></tr>
+            <tr class="tot"><td>Total</td><td class="r">34</td><td class="r">195</td><td class="r cost">$953.5 – $1,139.6</td></tr>
           </tbody>
         </table>
       </div>
@@ -659,12 +661,12 @@
 
     <div class="cc-grand">
       <div class="g-lab"><strong>Whole curriculum</strong> — KS3 + KS4 combined · 69 units · 392 lessons</div>
-      <div class="g-num">$2,410.8 – $2,881.2</div>
+      <div class="g-num">$1,916.9 – $2,290.9</div>
     </div>
     <p class="note" style="margin-top:12px">Every subject costed on gpt-4.1 (the most expensive content model), and
-    each lesson here <strong>includes ~30 whiteboard images (~$2.84/lesson)</strong> plus its script, narration audio
-    and helpers. The combined total is the sum of the two Key-Stage totals. Biology KS4 was not in the source
-    curriculum count, so it is left blank here rather than estimated.</p>
+    each lesson here <strong>includes ~30 whiteboard images on Gemini 3.1 Flash Image (~$1.58/lesson)</strong> plus its
+    script, narration audio and helpers. The combined total is the sum of the two Key-Stage totals. Biology KS4 was not
+    in the source curriculum count, so it is left blank here rather than estimated.</p>
   </div>
 
   <!-- ============ SUMMARY · EVERYTHING IN ONE PLACE ============ -->
@@ -696,10 +698,50 @@
       </div>
       <div class="ehc">
         <div class="ehc-lab">One-off curriculum build · total</div>
-        <div class="ehc-num">$2,410.8 – $2,881.2</div>
+        <div class="ehc-num">$1,916.9 – $2,290.9</div>
         <div class="ehc-note">every KS3 + KS4 lesson, once (incl. ~30 images/lesson)</div>
       </div>
     </div>
+
+    <!-- ---- independent volume projection (its own dials, NOT tied to Part 1) ---- -->
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+      <div class="ehc-lab" style="margin-bottom:2px">Project the totals · your own numbers</div>
+      <p class="note" style="margin:0 0 16px">Scale the two per-use costs by how many students you have and how
+      often each one runs. These dials are <strong>independent</strong> — they are not linked to the Part 1
+      homework sliders.</p>
+      <div class="grid3">
+        <div class="ctrl">
+          <label><span class="lbl">Number of students<small>independent of Part 1</small></span><span class="v" id="vSumStudents">100</span></label>
+          <input type="range" id="sumStudents" min="1" max="10000" step="1" value="100">
+        </div>
+        <div class="ctrl">
+          <label><span class="lbl">Live lesson sessions / student<small>real-time tutoring</small></span><span class="v" id="vSumLive">1</span></label>
+          <input type="range" id="sumLive" min="0" max="40" step="1" value="1">
+        </div>
+        <div class="ctrl">
+          <label><span class="lbl">Homework sessions / student<small>Tier 2 help</small></span><span class="v" id="vSumHw">1</span></label>
+          <input type="range" id="sumHw" min="0" max="40" step="1" value="1">
+        </div>
+      </div>
+      <div class="comb-cards" style="margin-top:6px">
+        <div class="ehc">
+          <div class="ehc-lab">Homework sessions · total</div>
+          <div class="ehc-num" id="sumHwTotal">$0</div>
+          <div class="ehc-note" id="sumHwNote">students × sessions × per-session</div>
+        </div>
+        <div class="ehc">
+          <div class="ehc-lab">Live lessons · total</div>
+          <div class="ehc-num" id="sumLiveTotal">$0</div>
+          <div class="ehc-note" id="sumLiveNote">students × sessions × $0.41</div>
+        </div>
+        <div class="ehc primary" style="grid-column:1/-1">
+          <div class="ehc-lab">Combined projected total</div>
+          <div class="ehc-num" id="sumGrandTotal">$0</div>
+          <div class="ehc-note" id="sumGrandNote">homework + live lessons, one-off curriculum build not included</div>
+        </div>
+      </div>
+    </div>
+
     <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1 (buffer included).
     The <strong>live lesson session</strong> is what it costs each time a student works through a lesson —
     real-time tutor voice (~12,600 characters at Inworld's $17/1M Developer plan ≈ $0.25) plus the live tutoring
@@ -731,9 +773,9 @@
           </div>
         </div>
         <div class="price-cell">
-          <div class="pt"><span class="dot gemini"></span> Gemini 3.1 Flash Image</div>
+          <div class="pt"><span class="dot gemini"></span> Gemini 3.1 Flash Image Light</div>
           <div class="pr">
-            <label><span>$ / image</span><input type="number" id="gem_img" value="0.1" step="0.001" min="0"></label>
+            <label><span>$ / image</span><input type="number" id="gem_img" value="0.05" step="0.001" min="0"></label>
           </div>
         </div>
         <div class="price-cell">
@@ -744,8 +786,8 @@
         </div>
       </div>
       <p class="note">Defaults verified against live published pricing (June 2026): o3 &amp; gpt-4.1 both
-      <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image (Nano-Banana-2) <strong>$0.10 per
-      image</strong> (conservative round-up from the ~$0.067 standard-tier list); Inworld TTS-2 <strong>$17 per 1M characters (Developer plan)</strong>
+      <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image Light (Nano-Banana-Light) <strong>$0.05 per
+      image</strong> (homework diagram generation); Inworld TTS-2 <strong>$17 per 1M characters (Developer plan)</strong>
       — dropping further at higher commit tiers and to ~$10 at enterprise scale. omni-moderation is free.
       Cached input on the OpenAI models is ~$0.50/1M; the Batch API is ~50% off. <strong>If you have negotiated or
       volume rates, type them in — these are list prices, not your invoice.</strong></p>
@@ -800,7 +842,7 @@ const CALLS = [
 const SERVICES = {
   o3:      {label:"o3 (reasoning)",        cls:"o3"},
   gpt:     {label:"gpt-4.1",               cls:"gpt"},
-  gemini:  {label:"Gemini Flash Image",    cls:"gemini"},
+  gemini:  {label:"Gemini Flash Image Light", cls:"gemini"},
   inworld: {label:"Inworld TTS-2",         cls:"inworld"},
   free:    {label:"omni-moderation (free)",cls:"free"},
 };
@@ -991,6 +1033,25 @@ function updateExecCards(s, r){
   if(combTot){
     combTot.textContent = "$"+fmt(r.perSession + LIVE_LESSON_PER_STUDENT, 2);
   }
+
+  // ---- independent volume projection (own dials — NOT driven by Part 1) ----
+  const sumStudents = +$("sumStudents").value;
+  const sumLive     = +$("sumLive").value;      // live lesson sessions per student
+  const sumHw       = +$("sumHw").value;        // homework sessions per student
+  const hwUnit      = r.perSession;             // per-session homework unit economics
+  const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.41)
+  const hwTotal     = sumStudents * sumHw   * hwUnit;
+  const liveTotal   = sumStudents * sumLive * liveUnit;
+  const grandTotal  = hwTotal + liveTotal;
+  const nStudents   = sumStudents.toLocaleString("en-US");
+  $("vSumStudents").textContent = nStudents;
+  $("vSumLive").textContent     = sumLive;
+  $("vSumHw").textContent       = sumHw;
+  $("sumHwTotal").textContent   = "$"+money(hwTotal);
+  $("sumLiveTotal").textContent = "$"+money(liveTotal);
+  $("sumGrandTotal").textContent= "$"+money(grandTotal);
+  $("sumHwNote").textContent    = `${nStudents} students × ${sumHw} session${sumHw===1?"":"s"} × $${fmt(hwUnit,3)}/session`;
+  $("sumLiveNote").textContent  = `${nStudents} students × ${sumLive} lesson${sumLive===1?"":"s"} × $${fmt(liveUnit,2)}/student`;
 }
 
 function render(){
@@ -1102,7 +1163,7 @@ function render(){
 const DEFAULTS = {exUsersNum:200,exSpuNum:10,pctCalc:50,mixMode:false,inmethod:"image",
   pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
   avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsCalc:4758,charsExpl:12611,
-  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.1,tts_char:17};
+  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.05,tts_char:17};
 
 // Write preset values into the controls (no render).
 function setPresetInputs(p){

@@ -60,7 +60,7 @@ h2, h3, table, blockquote, pre { page-break-inside: avoid; }
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><style>{css}</style></head>
 <body>
-<div class="doc-meta">ClevStudy Tutor Engine · Homework Help (Tier 2) · cost verification &amp; provider reconciliation</div>
+<div class="doc-meta">ClevStudy Tutor Engine · Homework Help (Tier 2) &amp; full curriculum build · cost verification &amp; provider reconciliation</div>
 {body}
 </body></html>"""
 
