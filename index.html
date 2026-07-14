@@ -709,8 +709,8 @@
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
       <div class="ehc-lab" style="margin-bottom:2px">Project the totals · your own numbers</div>
       <p class="note" style="margin:0 0 16px">Scale the two per-use costs by how many students you have and how
-      often each one runs. These dials are <strong>independent</strong> — they are not linked to the Part 1
-      homework sliders.</p>
+      often each one runs <strong>per month</strong>, then choose how many months to project. These dials are
+      <strong>independent</strong> — they are not linked to the Part 1 homework sliders.</p>
       <div class="grid3">
         <div class="ctrl">
           <label><span class="lbl">Number of students<small>type a number, or drag</small></span>
@@ -718,31 +718,41 @@
           <input type="range" id="sumStudents" min="1" max="10000" step="1" value="100">
         </div>
         <div class="ctrl">
-          <label><span class="lbl">Live lesson sessions / student<small>type a number, or drag</small></span>
+          <label><span class="lbl">Live lessons / student / month<small>type a number, or drag</small></span>
             <input type="number" class="v vnum" id="sumLiveNum" min="0" max="1000" step="1" value="1"></label>
           <input type="range" id="sumLive" min="0" max="40" step="1" value="1">
         </div>
         <div class="ctrl">
-          <label><span class="lbl">Homework sessions / student<small>type a number, or drag</small></span>
+          <label><span class="lbl">Homework / student / month<small>type a number, or drag</small></span>
             <input type="number" class="v vnum" id="sumHwNum" min="0" max="1000" step="1" value="1"></label>
           <input type="range" id="sumHw" min="0" max="40" step="1" value="1">
         </div>
       </div>
-      <div class="comb-cards" style="margin-top:6px">
+      <div class="ctrl" style="margin-top:4px">
+        <label><span class="lbl">Months to project<small>school year ≈ 10–12 · type a number, or drag</small></span>
+          <input type="number" class="v vnum" id="sumMonthsNum" min="1" max="120" step="1" value="12"></label>
+        <input type="range" id="sumMonths" min="1" max="36" step="1" value="12">
+      </div>
+      <div class="comb-cards" style="margin-top:14px">
         <div class="ehc">
-          <div class="ehc-lab">Homework sessions · total</div>
+          <div class="ehc-lab">Homework · per month</div>
           <div class="ehc-num" id="sumHwTotal">$0</div>
           <div class="ehc-note" id="sumHwNote">students × sessions × per-session</div>
         </div>
         <div class="ehc">
-          <div class="ehc-lab">Live lessons · total</div>
+          <div class="ehc-lab">Live lessons · per month</div>
           <div class="ehc-num" id="sumLiveTotal">$0</div>
           <div class="ehc-note" id="sumLiveNote">students × sessions × $0.41</div>
         </div>
-        <div class="ehc primary" style="grid-column:1/-1">
-          <div class="ehc-lab">Combined projected total</div>
+        <div class="ehc primary">
+          <div class="ehc-lab">Average cost / month</div>
           <div class="ehc-num" id="sumGrandTotal">$0</div>
-          <div class="ehc-note" id="sumGrandNote">homework + live lessons, one-off curriculum build not included</div>
+          <div class="ehc-note" id="sumGrandNote">homework + live lessons, per month</div>
+        </div>
+        <div class="ehc primary">
+          <div class="ehc-lab" id="sumProjLab">Projected total · over 12 months</div>
+          <div class="ehc-num" id="sumProjTotal">$0</div>
+          <div class="ehc-note" id="sumProjNote">monthly average × months — curriculum build not included</div>
         </div>
       </div>
     </div>
@@ -1043,22 +1053,29 @@ function updateExecCards(s, r){
   // The number boxes (#sum*Num) are canonical so a value beyond the slider max still counts;
   // the range sliders are mirrored (clamped) for the drag handle.
   const sumStudents = Math.max(1, Math.floor(+$("sumStudentsNum").value || 1));
-  const sumLive     = Math.max(0, Math.floor(+$("sumLiveNum").value || 0));  // live lesson sessions per student
-  const sumHw       = Math.max(0, Math.floor(+$("sumHwNum").value   || 0));  // homework sessions per student
+  const sumLive     = Math.max(0, Math.floor(+$("sumLiveNum").value || 0));  // live lessons / student / month
+  const sumHw       = Math.max(0, Math.floor(+$("sumHwNum").value   || 0));  // homework sessions / student / month
+  const sumMonths   = Math.max(1, Math.floor(+$("sumMonthsNum").value || 1));// months to project over
   $("sumStudents").value = sumStudents;   // mirror canonical → slider (auto-clamps to slider max)
   $("sumLive").value     = sumLive;
   $("sumHw").value       = sumHw;
+  $("sumMonths").value   = sumMonths;
   const hwUnit      = r.perSession;             // per-session homework unit economics
   const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.41)
-  const hwTotal     = sumStudents * sumHw   * hwUnit;
-  const liveTotal   = sumStudents * sumLive * liveUnit;
-  const grandTotal  = hwTotal + liveTotal;
+  const hwMonthly   = sumStudents * sumHw   * hwUnit;     // homework spend / month
+  const liveMonthly = sumStudents * sumLive * liveUnit;   // live-lesson spend / month
+  const monthly     = hwMonthly + liveMonthly;            // combined average cost / month
+  const projected   = monthly * sumMonths;               // total across the projection window
   const nStudents   = sumStudents.toLocaleString("en-US");
-  $("sumHwTotal").textContent   = "$"+money(hwTotal);
-  $("sumLiveTotal").textContent = "$"+money(liveTotal);
-  $("sumGrandTotal").textContent= "$"+money(grandTotal);
-  $("sumHwNote").textContent    = `${nStudents} students × ${sumHw} session${sumHw===1?"":"s"} × $${fmt(hwUnit,3)}/session`;
-  $("sumLiveNote").textContent  = `${nStudents} students × ${sumLive} lesson${sumLive===1?"":"s"} × $${fmt(liveUnit,2)}/student`;
+  $("sumHwTotal").textContent   = "$"+money(hwMonthly);
+  $("sumLiveTotal").textContent = "$"+money(liveMonthly);
+  $("sumGrandTotal").textContent= "$"+money(monthly);
+  $("sumProjTotal").textContent = "$"+money(projected);
+  $("sumProjLab").textContent   = `Projected total · over ${sumMonths} month${sumMonths===1?"":"s"}`;
+  const stu = sumStudents===1?"student":"students";
+  $("sumHwNote").textContent    = `${nStudents} ${stu} × ${sumHw} session${sumHw===1?"":"s"}/mo × $${fmt(hwUnit,3)}/session`;
+  $("sumLiveNote").textContent  = `${nStudents} ${stu} × ${sumLive} lesson${sumLive===1?"":"s"}/mo × $${fmt(liveUnit,2)}/student`;
+  $("sumProjNote").textContent  = `$${money(monthly)}/month × ${sumMonths} month${sumMonths===1?"":"s"} — curriculum build not included`;
 }
 
 function render(){
@@ -1226,6 +1243,7 @@ $("spu").addEventListener('input',     ()=>{ $("exSpuNum").value   = $("spu").va
 $("sumStudents").addEventListener('input', ()=>{ $("sumStudentsNum").value = $("sumStudents").value; });
 $("sumLive").addEventListener('input',     ()=>{ $("sumLiveNum").value     = $("sumLive").value;     });
 $("sumHw").addEventListener('input',       ()=>{ $("sumHwNum").value       = $("sumHw").value;       });
+$("sumMonths").addEventListener('input',   ()=>{ $("sumMonthsNum").value   = $("sumMonths").value;   });
 
 // bind every input
 document.querySelectorAll('input').forEach(el=>{
