@@ -50,6 +50,8 @@
     font-size:13.5px;margin-bottom:7px;color:var(--ink)}
   .ctrl label .v{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:600;
     background:var(--panel-2);padding:2px 8px;border-radius:6px;border:1px solid var(--line);white-space:nowrap}
+  .ctrl label input.vnum{width:92px;flex:none;text-align:right;font-size:13px;line-height:1.4}
+  .ctrl label input.vnum:focus{outline:none;border-color:var(--accent)}
   .ctrl label .lbl small{display:block;color:var(--ink-faint);font-size:11.5px;font-weight:400;margin-top:1px}
   input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;
     background:linear-gradient(90deg,var(--accent) var(--p,50%),var(--line) var(--p,50%));outline:none;margin:2px 0}
@@ -711,15 +713,18 @@
       homework sliders.</p>
       <div class="grid3">
         <div class="ctrl">
-          <label><span class="lbl">Number of students<small>independent of Part 1</small></span><span class="v" id="vSumStudents">100</span></label>
+          <label><span class="lbl">Number of students<small>type a number, or drag</small></span>
+            <input type="number" class="v vnum" id="sumStudentsNum" min="1" max="1000000" step="1" value="100"></label>
           <input type="range" id="sumStudents" min="1" max="10000" step="1" value="100">
         </div>
         <div class="ctrl">
-          <label><span class="lbl">Live lesson sessions / student<small>real-time tutoring</small></span><span class="v" id="vSumLive">1</span></label>
+          <label><span class="lbl">Live lesson sessions / student<small>type a number, or drag</small></span>
+            <input type="number" class="v vnum" id="sumLiveNum" min="0" max="1000" step="1" value="1"></label>
           <input type="range" id="sumLive" min="0" max="40" step="1" value="1">
         </div>
         <div class="ctrl">
-          <label><span class="lbl">Homework sessions / student<small>Tier 2 help</small></span><span class="v" id="vSumHw">1</span></label>
+          <label><span class="lbl">Homework sessions / student<small>type a number, or drag</small></span>
+            <input type="number" class="v vnum" id="sumHwNum" min="0" max="1000" step="1" value="1"></label>
           <input type="range" id="sumHw" min="0" max="40" step="1" value="1">
         </div>
       </div>
@@ -1035,18 +1040,20 @@ function updateExecCards(s, r){
   }
 
   // ---- independent volume projection (own dials — NOT driven by Part 1) ----
-  const sumStudents = +$("sumStudents").value;
-  const sumLive     = +$("sumLive").value;      // live lesson sessions per student
-  const sumHw       = +$("sumHw").value;        // homework sessions per student
+  // The number boxes (#sum*Num) are canonical so a value beyond the slider max still counts;
+  // the range sliders are mirrored (clamped) for the drag handle.
+  const sumStudents = Math.max(1, Math.floor(+$("sumStudentsNum").value || 1));
+  const sumLive     = Math.max(0, Math.floor(+$("sumLiveNum").value || 0));  // live lesson sessions per student
+  const sumHw       = Math.max(0, Math.floor(+$("sumHwNum").value   || 0));  // homework sessions per student
+  $("sumStudents").value = sumStudents;   // mirror canonical → slider (auto-clamps to slider max)
+  $("sumLive").value     = sumLive;
+  $("sumHw").value       = sumHw;
   const hwUnit      = r.perSession;             // per-session homework unit economics
   const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.41)
   const hwTotal     = sumStudents * sumHw   * hwUnit;
   const liveTotal   = sumStudents * sumLive * liveUnit;
   const grandTotal  = hwTotal + liveTotal;
   const nStudents   = sumStudents.toLocaleString("en-US");
-  $("vSumStudents").textContent = nStudents;
-  $("vSumLive").textContent     = sumLive;
-  $("vSumHw").textContent       = sumHw;
   $("sumHwTotal").textContent   = "$"+money(hwTotal);
   $("sumLiveTotal").textContent = "$"+money(liveTotal);
   $("sumGrandTotal").textContent= "$"+money(grandTotal);
@@ -1214,6 +1221,11 @@ $("exUsers").addEventListener('input', ()=>{ $("exUsersNum").value = $("exUsers"
 $("exSpu").addEventListener('input',   ()=>{ $("exSpuNum").value   = $("exSpu").value;   });
 $("users").addEventListener('input',   ()=>{ $("exUsersNum").value = $("users").value;   });
 $("spu").addEventListener('input',     ()=>{ $("exSpuNum").value   = $("spu").value;     });
+
+// Summary volume-projection: number boxes (#sum*Num) are canonical; dragging a slider writes back into them.
+$("sumStudents").addEventListener('input', ()=>{ $("sumStudentsNum").value = $("sumStudents").value; });
+$("sumLive").addEventListener('input',     ()=>{ $("sumLiveNum").value     = $("sumLive").value;     });
+$("sumHw").addEventListener('input',       ()=>{ $("sumHwNum").value       = $("sumHw").value;       });
 
 // bind every input
 document.querySelectorAll('input').forEach(el=>{
