@@ -589,35 +589,69 @@
   <div class="section-band">
     <div class="eyebrow">Part 2 · dynamic real-time cost</div>
     <h2>Live lesson session — cost per student</h2>
-    <p>What it costs each time a student works through an <strong>already-built</strong> lesson — the real-time
-    tutor voice and the live LLM calls that engage the student (answer feedback, check-in questions, hints, quiz
-    explanations, misconceptions). Billed <strong>per student, every time</strong>. This is not lesson
-    generation — that one-off, all-subject build is the <strong>Full curriculum build</strong> below.</p>
+    <p>What it costs each time a student works through an <strong>already-built</strong> lesson — the live LLM
+    calls behind each check-in question and the tutor voice that speaks the replies. Billed
+    <strong>per student, every time</strong>. This is not lesson generation — that one-off, all-subject build is
+    the <strong>Full curriculum build</strong> below.</p>
   </div>
 
   <div class="card contentcost" id="liveLessonCost">
     <h2><span class="num">＄</span> Estimated cost per student / lesson</h2>
-    <p class="hint">The real-time cost of one student taking a lesson: <strong>live tutor voice</strong> streamed
-    per character (uncached, billed every time) plus the <strong>live tutoring LLM</strong> that reacts to the
-    student. Voice is costed at Inworld's <strong>$17 / 1M-character Developer plan</strong>; grounded on a
-    measured single-student live session.</p>
+    <p class="hint">A lesson is <strong>4 segments × 6 chunks</strong>. Each segment pauses for
+    <strong>2 check-in questions</strong> — one mid-segment, one at the end — so a lesson asks
+    <strong>8 questions</strong>. Every question is generated live, so the cost is driven by how many LLM calls
+    those 8 questions trigger. Worked examples and the quiz are served from cache and cost nothing live.</p>
+
     <table>
       <thead><tr>
-        <th>Component</th><th>Provider / model</th><th class="r">Basis</th><th class="r">Cost / student</th>
+        <th>Per check-in question</th><th>When it fires</th><th class="r">Calls × 8 questions</th>
       </tr></thead>
       <tbody>
-        <tr><td class="nm">Live tutor voice</td><td>Inworld TTS-2</td>
-          <td class="r">~12,600 chars @ $17/1M</td><td class="r">~$0.25</td></tr>
-        <tr><td class="nm">Live tutoring LLM</td><td>gpt-4.1</td>
-          <td class="r">~25 live calls</td><td class="r">~$0.16</td></tr>
-        <tr class="tot"><td>Total / student</td><td></td><td class="r"></td><td class="r cost">≈ $0.41</td></tr>
+        <tr><td class="nm">Generate the question</td><td>Always — written fresh for that chunk</td>
+          <td class="r">8</td></tr>
+        <tr><td class="nm">Spoken feedback on the answer</td><td>Always — right <em>and</em> wrong answers</td>
+          <td class="r">8</td></tr>
+        <tr><td class="nm">Re-explain the concept</td><td>Only after a wrong answer, max once per question</td>
+          <td class="r">0 – 8</td></tr>
+        <tr class="tot"><td>Live LLM calls per lesson</td><td></td><td class="r cost">16 – 24</td></tr>
       </tbody>
     </table>
-    <p class="note" style="margin-top:12px">The tutor voice is streamed live through the web app's own TTS proxy
-    (<code>/api/voice/tts</code>) — <strong>uncached and billed on every playback</strong>, unlike the
-    pre-generated lesson narration. The live LLM (answer evaluation, feedback, hints, quiz explanations, Q&amp;A)
-    is costed on <strong>gpt-4.1</strong> at ~25 interactive calls per student (~30k input + ~10k output tokens).
-    Both scale with how much the student interacts, so <strong>≈ $0.41/student</strong> is a central estimate.</p>
+
+    <p class="note" style="margin-top:14px"><strong>Why the range runs to 24.</strong> Two of the three calls are
+    unavoidable — every question must be written, and every answer gets spoken feedback whether it is right or
+    wrong. That is the <strong>floor of 16</strong>, and it is only reached by a student who answers all 8
+    check-ins correctly first time. The third call is the <strong>&ldquo;Explain again&rdquo;</strong>
+    re-teach, offered only when an answer is wrong. Eight wrong answers means eight re-explanations — the
+    <strong>ceiling of 24</strong>. It cannot go higher: the re-explain is capped at <strong>one per
+    question</strong>, and the lesson auto-advances once it has been spoken.</p>
+
+    <p class="note">Neither end of the range is the expected case. The check-ins are
+    <strong>two-option multiple choice</strong>, so a student guessing blindly is wrong about half the time —
+    roughly 4 re-explanations, or <strong>20 calls</strong>. This tier also assumes <strong>no prior
+    knowledge</strong>, which is exactly the cohort most likely to miss a check-in, and tapping
+    &ldquo;Explain again&rdquo; is free and one tap — it is the only way to hear the idea a second time, so
+    uptake is high whenever it is offered. Budget on <strong>20</strong>; size headroom for <strong>24</strong>.</p>
+
+    <table style="margin-top:16px">
+      <thead><tr>
+        <th>Scenario</th><th class="r">Live calls</th><th class="r">LLM (gpt-4.1)</th>
+        <th class="r">Voice (Inworld)</th><th class="r">Cost / student</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="nm">Every check-in correct</td><td class="r">16</td>
+          <td class="r">$0.039</td><td class="r">$0.063</td><td class="r">$0.10</td></tr>
+        <tr class="tot"><td>Half wrong — planning case</td><td class="r">20</td>
+          <td class="r">$0.056</td><td class="r">$0.117</td><td class="r cost">≈ $0.17</td></tr>
+        <tr><td class="nm">Every check-in wrong</td><td class="r">24</td>
+          <td class="r">$0.073</td><td class="r">$0.172</td><td class="r">$0.25</td></tr>
+      </tbody>
+    </table>
+
+    <p class="note" style="margin-top:12px">Lesson narration is <strong>pre-generated and cached</strong>, so
+    replaying a lesson costs nothing to speak. The voice figure above covers only what is composed live — the
+    question, the feedback and any re-explanation — which is why it rises with wrong answers alongside the LLM
+    cost rather than staying flat. Both columns move together, so <strong>≈ $0.17/student</strong> is the
+    central estimate and <strong>$0.25</strong> the worst case.</p>
   </div>
 
   <!-- ============ ONE-OFF · FULL CURRICULUM BUILD (part of Lesson Content) ============ -->
@@ -690,8 +724,8 @@
       </div>
       <div class="ehc">
         <div class="ehc-lab">Live lesson session · per student</div>
-        <div class="ehc-num">$0.41</div>
-        <div class="ehc-note">live tutoring — voice (~12,600 chars) + gpt-4.1 LLM, per student per lesson</div>
+        <div class="ehc-num">$0.17</div>
+        <div class="ehc-note">8 check-in questions — 20 live calls typical (16–24), per student per lesson</div>
       </div>
       <div class="ehc">
         <div class="ehc-lab">Both dynamic units · combined</div>
@@ -742,7 +776,7 @@
         <div class="ehc">
           <div class="ehc-lab">Live lessons · per month</div>
           <div class="ehc-num" id="sumLiveTotal">$0</div>
-          <div class="ehc-note" id="sumLiveNote">students × sessions × $0.41</div>
+          <div class="ehc-note" id="sumLiveNote">students × sessions × $0.17</div>
         </div>
         <div class="ehc primary">
           <div class="ehc-lab">Average cost / month</div>
@@ -759,9 +793,11 @@
 
     <p class="note" style="margin-top:14px">The homework figure is live from the dials in Part 1.
     The <strong>live lesson session</strong> is what it costs each time a student works through a lesson —
-    real-time tutor voice (~12,600 characters at Inworld's $17/1M Developer plan ≈ $0.25) plus the live tutoring
-    LLM (gpt-4.1, ~25 calls ≈ $0.16) — voice grounded on a measured single-student live session. Both are
-    billed <strong>every time</strong> a student engages. The <strong>combined</strong> card sums one homework
+    8 check-in questions across 4 segments, each generated live and each answered with spoken feedback. That is
+    <strong>16 calls</strong> if every answer is right, rising to <strong>24</strong> when every wrong answer
+    triggers a re-explanation; <strong>20</strong> is the planning case. Both the LLM (gpt-4.1) and the voice
+    (Inworld, $17/1M Developer plan) are billed <strong>every time</strong> a student engages.
+    The <strong>combined</strong> card sums one homework
     session + one live lesson session; the <strong>curriculum build</strong> is the one-off total to generate
     every lesson, images included.</p>
   </div>
@@ -865,9 +901,13 @@ const SERVICES = {
 // Safety buffer applied to every provider price (invisible — inputs still show published rates).
 const PRICE_BUFFER = 1.15;
 // Static per-student cost of one LIVE lesson session (real-time tutoring), used by the summary "combined" card.
-// Live tutor voice ~12,600 chars @ $17/1M Developer plan (×1.15) ≈ $0.25 + live tutoring LLM on gpt-4.1
-// (~25 calls, ~30k in + ~10k out tokens @ $2/$8, ×1.15) ≈ $0.16 ⇒ ≈ $0.41/student/lesson.
-const LIVE_LESSON_PER_STUDENT = 0.41;
+// Lesson = 4 segments x 6 chunks; each segment pauses for 2 check-ins (1 mid + 1 end) => 8 questions.
+// Per question: generate (always) + spoken feedback (always) + re-explain (wrong answers only, capped at 1)
+//   => 16 calls floor / 20 planning case / 24 ceiling.
+// At 20 calls: gpt-4.1 ~18.4k in + 1.5k out tokens @ $2/$8 (x1.15) = $0.056; Inworld voice on the ~6,000
+// chars composed live (narration audio is pre-generated and cached) @ $17/1M (x1.15) = $0.117.
+// => ~$0.17/student/lesson (range $0.10 at 16 calls, $0.25 at 24).
+const LIVE_LESSON_PER_STUDENT = 0.17;
 // Measured AVERAGE TTS characters per session (homework_tts_summary.pdf — 6 real sessions, 2026-07-10).
 // Route-specific: calculation (o3) sessions narrate far less than prose (gpt-4.1) explanation sessions.
 // These are the editable defaults for the two audio dials; the blended figure follows the calc/expl mix.
@@ -1043,7 +1083,7 @@ function updateExecCards(s, r){
   // summary section — homework session cost mirrors the exec per-session figure
   const combHw = $("combHwSession");
   if(combHw) combHw.textContent = "$"+fmt(r.perSession,3);
-  // combined-total card = live homework session + one live lesson session (static $0.41)
+  // combined-total card = live homework session + one live lesson session (static $0.17)
   const combTot = $("combDynTotal");
   if(combTot){
     combTot.textContent = "$"+fmt(r.perSession + LIVE_LESSON_PER_STUDENT, 2);
@@ -1061,7 +1101,7 @@ function updateExecCards(s, r){
   $("sumHw").value       = sumHw;
   $("sumMonths").value   = sumMonths;
   const hwUnit      = r.perSession;             // per-session homework unit economics
-  const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.41)
+  const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.17)
   const hwMonthly   = sumStudents * sumHw   * hwUnit;     // homework spend / month
   const liveMonthly = sumStudents * sumLive * liveUnit;   // live-lesson spend / month
   const monthly     = hwMonthly + liveMonthly;            // combined average cost / month

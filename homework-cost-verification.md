@@ -256,6 +256,83 @@ count, so it is left blank rather than estimated. The combined total is the sum 
 
 ---
 
+## 9. Live lesson session — why the LLM call count runs 16 to 24
+
+The live lesson cost is not a flat per-minute rate. It is driven almost entirely by **how many LLM calls the
+check-in questions trigger**, so the call count is derived here rather than assumed.
+
+### 9.1 Lesson shape
+
+A lesson is **4 segments × 6 chunks = 24 chunks**. Chunks are narration; they do not each carry a question.
+`_apply_segment_checkin_rhythm` (`app/modules/content_generator.py`) marks exactly **two pause points per
+segment** — one mid-segment (chunk index 2, 3 or 4, chosen at random) and one on the last chunk — each asking
+**one question**.
+
+| | Per segment | Per lesson |
+|---|---|---|
+| Chunks | 6 | 24 |
+| Check-in pause points | 2 | 8 |
+| **Questions asked** | **2** | **8** |
+
+Worked examples and the quiz are excluded: they are served from cache and make no live call, and their text is
+not spoken live, so they contribute neither LLM tokens nor TTS characters.
+
+### 9.2 The three calls behind one question
+
+Each check-in is generated fresh at lesson time — nothing is read from the pre-built `QuestionBank`, which
+serves the practice quiz and the pre/post assessment instead. All three calls route through
+`POST /lessons/{id}/ask-question`.
+
+| Call | Fires | Capped? |
+|---|---|---|
+| 1. Generate the question | **Always** — written against the chunk (or the whole segment, on the last chunk) | — |
+| 2. Spoken feedback | **Always** — the prompt branches on correct/incorrect, so a right answer still costs a call | — |
+| 3. Re-explain the concept | **Only after a wrong answer** | **Max 1 per question**; the lesson then auto-advances |
+
+**Floor = 8 × 2 = 16 calls. Ceiling = 8 × 3 = 24 calls.**
+
+### 9.3 Why 24 is reachable, and why nothing exceeds it
+
+The floor of 16 assumes a student answers **all eight check-ins correctly, first time**. That is the best case,
+not the typical one. Four things push a real session toward the ceiling:
+
+1. **Two-option multiple choice.** Check-ins offer exactly 2 options, so a student who is guessing is wrong
+   about **half** the time. Blind guessing alone lands on ~4 re-explanations — **20 calls** — which makes 20,
+   not 16, the statistically neutral midpoint.
+2. **This tier assumes no prior knowledge.** The Foundation script is written for students starting from
+   zero, which is precisely the cohort most likely to miss a check-in. The content tier and the wrong-answer
+   rate are correlated, so this tier skews to the upper half of the range.
+3. **&ldquo;Explain again&rdquo; is one tap and free to the student.** It is the only route to hearing the idea a
+   second time, so when it is offered it is usually taken. Offered ≈ taken, in practice.
+4. **Wrong answers cost more on both sides.** The re-explain is the largest prompt of the three (~4,700
+   characters in) and produces the longest spoken reply (~700 characters), so each one adds LLM *and* voice
+   cost together.
+
+The ceiling holds at 24 because the re-explain is capped at one per question in code — a second attempt is
+never offered, and the lesson advances as soon as the single re-explanation finishes speaking. The only way
+past 24 is the free-text answer path, which inserts an extra on-topic validation call; multiple choice is the
+default and free-text is not used for check-ins.
+
+### 9.4 Cost across the range
+
+Prompt sizes are measured from the actual prompt builders, including the backend system prompt and wrapper
+added to every call. Narration audio is pre-generated and cached, so the voice line covers only text composed
+live — the question, the feedback, and any re-explanation.
+
+| Scenario | Live calls | Tokens in | Tokens out | LLM (gpt-4.1) | Voice chars | Voice (Inworld) | **Total / student** |
+|---|---|---|---|---|---|---|---|
+| Every check-in correct | 16 | 13,662 | 800 | $0.039 | 3,200 | $0.063 | **$0.10** |
+| **Half wrong — planning case** | **20** | **18,371** | **1,500** | **$0.056** | **6,000** | **$0.117** | **≈ $0.17** |
+| Every check-in wrong | 24 | 23,080 | 2,200 | $0.073 | 8,800 | $0.172 | **$0.25** |
+
+**Budget on $0.17 per student per lesson; size headroom for $0.25.**
+
+This supersedes the previous flat estimate of ~25 calls / ~12,600 voice characters / $0.41. That figure was a
+single measured session with no structural derivation, and it double-counted the pre-generated narration as a
+live voice cost.
+
+---
+
 ### Sources
 - OpenAI o3 API pricing ($2 / $8 per 1M tokens; hidden reasoning tokens billed at output rate):
   <https://developers.openai.com/api/docs/pricing> · <https://pricepertoken.com/pricing-page/model/openai-o3>
