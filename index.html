@@ -273,10 +273,10 @@
     breakdown by service and phase updates live. Every token count and unit price is editable under
     <em>Advanced assumptions</em> — defaults are best-effort and should be tuned to your real provider contracts.</p>
     <div class="pill-row">
-      <span class="pill"><span class="dot o3"></span> o3 — reasoning (calculation walkthroughs)</span>
+      <span class="pill"><span class="dot o3"></span> GPT-5 mini — reasoning (calculation walkthroughs)</span>
       <span class="pill"><span class="dot gpt"></span> gpt-4.1 — prose, extraction &amp; classification</span>
       <span class="pill"><span class="dot gemini"></span> Gemini 3.1 Flash Image Light (Nano-Banana-Light) — diagram visuals</span>
-      <span class="pill"><span class="dot inworld"></span> Inworld TTS-2 — audio</span>
+      <span class="pill"><span class="dot inworld"></span> Speechify — audio</span>
       <span class="pill"><span class="dot free"></span> omni-moderation — free</span>
     </div>
   </header>
@@ -374,7 +374,7 @@
         <div class="eact part">
           <div class="ei">🔊</div>
           <div class="en">Text-to-speech (audio)</div>
-          <div class="ed">Reads the walkthrough aloud (Inworld voice)</div>
+          <div class="ed">Reads the walkthrough aloud (Speechify voice)</div>
           <div class="ec" id="svcTts">$0</div>
           <div class="tag">per session</div>
         </div>
@@ -395,8 +395,8 @@
       </div>
     </div>
 
-    <p class="exec-foot">These are <strong>estimates</strong> based on published provider prices (o3, gpt-4.1, Gemini
-    image and Inworld voice) — not a bill. A safety check runs on every question at <strong>no cost</strong>. Reused
+    <p class="exec-foot">These are <strong>estimates</strong> based on published provider prices (GPT-5 mini, gpt-4.1, Gemini
+    image and Speechify voice) — not a bill. A safety check runs on every question at <strong>no cost</strong>. Reused
     audio and text are not charged twice, so real costs are usually a little <strong>lower</strong>. Fine-tune the
     assumptions in the controls below and in <em>Advanced assumptions</em>.</p>
   </section>
@@ -431,7 +431,7 @@
         </div>
 
         <div class="ctrl">
-          <label><span class="lbl">Calculation questions<small>route to o3 · the rest are explanation → gpt-4.1</small></span><span class="v" id="vCalc">50%</span></label>
+          <label><span class="lbl">Calculation questions<small>route to GPT-5 mini · the rest are explanation → gpt-4.1</small></span><span class="v" id="vCalc">50%</span></label>
           <input type="range" id="pctCalc" min="0" max="100" step="5" value="50">
         </div>
       </div>
@@ -515,11 +515,11 @@
       </div>
 
       <div class="card detail-only">
-        <h2><span class="num">5</span> Audio (Inworld TTS-2)</h2>
+        <h2><span class="num">5</span> Audio (Speechify)</h2>
         <p class="hint">Charged per character. Audio narrates the 3A explanation, every solution &amp; demo step,
         the intros / completion, and each piece of feedback / Q&amp;A reply. <strong>Audio is costed on the
         <em>measured average</em> narration length</strong> — measured across real homework sessions — and is
-        <strong>route-specific</strong>: calculation (o3) sessions narrate far less than prose (gpt-4.1)
+        <strong>route-specific</strong>: calculation (GPT-5 mini) sessions narrate far less than prose (gpt-4.1)
         explanation sessions. The blended figure follows your calculation / explanation mix above.</p>
 
         <div class="toggle-row" style="margin-bottom:16px">
@@ -530,7 +530,7 @@
         <div id="audioControls">
           <div class="grid2">
             <div class="ctrl">
-              <label><span class="lbl">Calculation chars / session<small>o3 route — measured avg</small></span><span class="v" id="vCalcChars">4,758</span></label>
+              <label><span class="lbl">Calculation chars / session<small>GPT-5 mini route — measured avg</small></span><span class="v" id="vCalcChars">4,758</span></label>
               <input type="range" id="charsCalc" min="1000" max="24000" step="100" value="4758">
             </div>
             <div class="ctrl">
@@ -634,24 +634,24 @@
 
     <table style="margin-top:16px">
       <thead><tr>
-        <th>Scenario</th><th class="r">Live calls</th><th class="r">LLM (gpt-4.1)</th>
-        <th class="r">Voice (Inworld)</th><th class="r">Cost / student</th>
+        <th>Scenario</th><th class="r">Live calls</th><th class="r">LLM (GPT-5 mini)</th>
+        <th class="r">Voice (Speechify)</th><th class="r">Cost / student</th>
       </tr></thead>
       <tbody>
         <tr><td class="nm">Every check-in correct</td><td class="r">16</td>
-          <td class="r">$0.039</td><td class="r">$0.063</td><td class="r">$0.10</td></tr>
+          <td class="r">$0.006</td><td class="r">$0.029</td><td class="r">$0.035</td></tr>
         <tr class="tot"><td>Half wrong — planning case</td><td class="r">20</td>
-          <td class="r">$0.056</td><td class="r">$0.117</td><td class="r cost">≈ $0.17</td></tr>
+          <td class="r">$0.009</td><td class="r">$0.055</td><td class="r cost">≈ $0.064</td></tr>
         <tr><td class="nm">Every check-in wrong</td><td class="r">24</td>
-          <td class="r">$0.073</td><td class="r">$0.172</td><td class="r">$0.25</td></tr>
+          <td class="r">$0.012</td><td class="r">$0.081</td><td class="r">$0.093</td></tr>
       </tbody>
     </table>
 
     <p class="note" style="margin-top:12px">Lesson narration is <strong>pre-generated and cached</strong>, so
     replaying a lesson costs nothing to speak. The voice figure above covers only what is composed live — the
     question, the feedback and any re-explanation — which is why it rises with wrong answers alongside the LLM
-    cost rather than staying flat. Both columns move together, so <strong>≈ $0.17/student</strong> is the
-    central estimate and <strong>$0.25</strong> the worst case.</p>
+    cost rather than staying flat. Both columns move together, so <strong>≈ $0.064/student</strong> is the
+    central estimate and <strong>$0.093</strong> the worst case.</p>
   </div>
 
   <!-- ============ ONE-OFF · FULL CURRICULUM BUILD (part of Lesson Content) ============ -->
@@ -724,7 +724,7 @@
       </div>
       <div class="ehc">
         <div class="ehc-lab">Live lesson session · per student</div>
-        <div class="ehc-num">$0.17</div>
+        <div class="ehc-num">$0.064</div>
         <div class="ehc-note">8 check-in questions — 20 live calls typical (16–24), per student per lesson</div>
       </div>
       <div class="ehc">
@@ -776,7 +776,7 @@
         <div class="ehc">
           <div class="ehc-lab">Live lessons · per month</div>
           <div class="ehc-num" id="sumLiveTotal">$0</div>
-          <div class="ehc-note" id="sumLiveNote">students × sessions × $0.17</div>
+          <div class="ehc-note" id="sumLiveNote">students × sessions × $0.064</div>
         </div>
         <div class="ehc primary">
           <div class="ehc-lab">Average cost / month</div>
@@ -795,8 +795,8 @@
     The <strong>live lesson session</strong> is what it costs each time a student works through a lesson —
     8 check-in questions across 4 segments, each generated live and each answered with spoken feedback. That is
     <strong>16 calls</strong> if every answer is right, rising to <strong>24</strong> when every wrong answer
-    triggers a re-explanation; <strong>20</strong> is the planning case. Both the LLM (gpt-4.1) and the voice
-    (Inworld, $17/1M Developer plan) are billed <strong>every time</strong> a student engages.
+    triggers a re-explanation; <strong>20</strong> is the planning case. Both the LLM (GPT-5 mini) and the voice
+    (Speechify, $8/1M Pro plan) are billed <strong>every time</strong> a student engages.
     The <strong>combined</strong> card sums one homework
     session + one live lesson session; the <strong>curriculum build</strong> is the one-off total to generate
     every lesson, images included.</p>
@@ -810,10 +810,10 @@
       <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);margin:4px 0 12px">Unit prices</h3>
       <div class="price-grid">
         <div class="price-cell">
-          <div class="pt"><span class="dot o3"></span> o3 (reasoning)</div>
+          <div class="pt"><span class="dot o3"></span> GPT-5 mini (reasoning)</div>
           <div class="pr">
-            <label><span>$ / 1M input</span><input type="number" id="o3_in" value="2" step="0.1" min="0"></label>
-            <label><span>$ / 1M output</span><input type="number" id="o3_out" value="8" step="0.1" min="0"></label>
+            <label><span>$ / 1M input</span><input type="number" id="o3_in" value="0.25" step="0.05" min="0"></label>
+            <label><span>$ / 1M output</span><input type="number" id="o3_out" value="2" step="0.1" min="0"></label>
           </div>
         </div>
         <div class="price-cell">
@@ -830,22 +830,23 @@
           </div>
         </div>
         <div class="price-cell">
-          <div class="pt"><span class="dot inworld"></span> Inworld TTS-2</div>
+          <div class="pt"><span class="dot inworld"></span> Speechify</div>
           <div class="pr">
-            <label><span>$ / 1M chars</span><input type="number" id="tts_char" value="17" step="0.5" min="0"></label>
+            <label><span>$ / 1M chars</span><input type="number" id="tts_char" value="8" step="0.5" min="0"></label>
           </div>
         </div>
       </div>
-      <p class="note">Defaults verified against live published pricing (June 2026): o3 &amp; gpt-4.1 both
-      <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image Light (Nano-Banana-Light) <strong>$0.05 per
-      image</strong> (homework diagram generation); Inworld TTS-2 <strong>$17 per 1M characters (Developer plan)</strong>
-      — dropping further at higher commit tiers and to ~$10 at enterprise scale. omni-moderation is free.
-      Cached input on the OpenAI models is ~$0.50/1M; the Batch API is ~50% off. <strong>If you have negotiated or
+      <p class="note">Defaults verified against live published pricing (July 2026): GPT-5 mini (calculation route)
+      <strong>$0.25 input / $2 output</strong> per 1M tokens, down from o3's $2 / $8; gpt-4.1 (prose, extraction,
+      classification) <strong>$2 input / $8 output</strong> per 1M tokens; Gemini 3.1 Flash Image Light (Nano-Banana-Light)
+      <strong>$0.05 per image</strong> (homework diagram generation); Speechify <strong>$8 per 1M characters (Pro
+      plan)</strong> — $10 Starter, $6 Scale, enterprise volume discount. omni-moderation is free.
+      Cached input on GPT-5 mini is ~$0.025/1M; the Batch API is ~50% off. <strong>If you have negotiated or
       volume rates, type them in — these are list prices, not your invoice.</strong></p>
 
       <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-dim);margin:24px 0 10px">
         Per-call token assumptions</h3>
-      <p class="note" style="margin-bottom:12px">Each homework session fires the calls below. Output tokens for o3
+      <p class="note" style="margin-bottom:12px">Each homework session fires the calls below. Output tokens for GPT-5 mini
       <em>include</em> hidden reasoning tokens, so they sit near the <code>max_completion_tokens</code> budgets in
       <code>solver.py</code>. “Per session” shows how many times each call runs for the current settings.</p>
       <table class="assump">
@@ -861,7 +862,7 @@
   <footer>
     Model maps directly to <code>app/modules/homework/</code>: <code>extractor.py</code> (intake),
     <code>analyzer.py</code> (classify + curriculum/safety gate + lesson match), <code>solver.py</code>
-    (<code>build()</code> 5-call pipeline + attempts/ask), <code>media.py</code> (Inworld audio), and the Gemini
+    (<code>build()</code> 5-call pipeline + attempts/ask), <code>media.py</code> (TTS audio), and the Gemini
     visual in <code>visual_assets/illustration_providers.py</code>. Estimates only — verify against live billing.
   </footer>
 </div>
@@ -870,8 +871,9 @@
 "use strict";
 
 // ── Editable per-call token assumptions ──────────────────────────────────────
-// model: 'gpt' fixed, or 'route' = depends on calc/explanation (o3 vs gpt-4.1).
-// out has {o3, gpt} when route; otherwise a single number.
+// model: 'gpt' fixed, or 'route' = depends on calc/explanation (GPT-5 mini vs gpt-4.1).
+// out has {o3, gpt} when route; the 'o3' key is the reasoning route, now priced as GPT-5 mini
+// (kept as an object key so the price inputs / CSS colours don't have to be renamed).
 const CALLS = [
   // intake — only on the relevant input method (handled via .when)
   {key:"extract_img",  name:"Extract — image (vision)",      model:"gpt",   in:1100, out:400,  when:"image",  retry:false},
@@ -891,10 +893,10 @@ const CALLS = [
 ];
 
 const SERVICES = {
-  o3:      {label:"o3 (reasoning)",        cls:"o3"},
+  o3:      {label:"GPT-5 mini (reasoning)", cls:"o3"},
   gpt:     {label:"gpt-4.1",               cls:"gpt"},
   gemini:  {label:"Gemini Flash Image Light", cls:"gemini"},
-  inworld: {label:"Inworld TTS-2",         cls:"inworld"},
+  inworld: {label:"Speechify",             cls:"inworld"},
   free:    {label:"omni-moderation (free)",cls:"free"},
 };
 
@@ -904,14 +906,14 @@ const PRICE_BUFFER = 1.15;
 // Lesson = 4 segments x 6 chunks; each segment pauses for 2 check-ins (1 mid + 1 end) => 8 questions.
 // Per question: generate (always) + spoken feedback (always) + re-explain (wrong answers only, capped at 1)
 //   => 16 calls floor / 20 planning case / 24 ceiling.
-// At 20 calls: gpt-4.1 ~18.4k in + 1.5k out tokens @ $2/$8 (x1.15) = $0.056; Inworld voice on the ~6,000
-// chars composed live (narration audio is pre-generated and cached) @ $17/1M (x1.15) = $0.117.
-// => ~$0.17/student/lesson (range $0.10 at 16 calls, $0.25 at 24).
-const LIVE_LESSON_PER_STUDENT = 0.17;
+// At 20 calls: GPT-5 mini ~18.4k in + 1.5k out tokens @ $0.25/$2 (x1.15) = $0.009; Speechify voice on the
+// ~6,000 chars composed live (narration audio is pre-generated and cached) @ $8/1M (x1.15) = $0.055.
+// => ~$0.064/student/lesson (range $0.035 at 16 calls, $0.093 at 24).
+const LIVE_LESSON_PER_STUDENT = 0.064;
 // Measured AVERAGE TTS characters per session (homework_tts_summary.pdf — 6 real sessions, 2026-07-10).
-// Route-specific: calculation (o3) sessions narrate far less than prose (gpt-4.1) explanation sessions.
+// Route-specific: calculation (GPT-5 mini) sessions narrate far less than prose (gpt-4.1) explanation sessions.
 // These are the editable defaults for the two audio dials; the blended figure follows the calc/expl mix.
-const TTS_AVG_CALC = 4758;    // o3 route — Maths/Physics/Chemistry sums (measured mean, n=3)
+const TTS_AVG_CALC = 4758;    // GPT-5 mini route — Maths/Physics/Chemistry sums (measured mean, n=3)
 const TTS_AVG_EXPL = 12611;   // gpt-4.1 route — English/Biology prose (measured mean, n=3)
 
 const $ = id => document.getElementById(id);
@@ -1033,7 +1035,7 @@ function compute(s){
   svc.gemini += visualPerSession;
   phase.Visuals += visualPerSession;
 
-  // audio — Inworld, per character.
+  // audio — Speechify, per character.
   // Costed on the MEASURED AVERAGE narration length (homework_tts_summary.pdf), and route-specific:
   // calculation (o3) sessions narrate ~4,758 chars, explanation (gpt-4.1) sessions ~12,611 chars.
   // The blended figure follows the calc/explanation mix, so the max no longer inflates the average.
@@ -1083,7 +1085,7 @@ function updateExecCards(s, r){
   // summary section — homework session cost mirrors the exec per-session figure
   const combHw = $("combHwSession");
   if(combHw) combHw.textContent = "$"+fmt(r.perSession,3);
-  // combined-total card = live homework session + one live lesson session (static $0.17)
+  // combined-total card = live homework session + one live lesson session (static $0.064)
   const combTot = $("combDynTotal");
   if(combTot){
     combTot.textContent = "$"+fmt(r.perSession + LIVE_LESSON_PER_STUDENT, 2);
@@ -1101,7 +1103,7 @@ function updateExecCards(s, r){
   $("sumHw").value       = sumHw;
   $("sumMonths").value   = sumMonths;
   const hwUnit      = r.perSession;             // per-session homework unit economics
-  const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.17)
+  const liveUnit    = LIVE_LESSON_PER_STUDENT;  // per-student live lesson cost ($0.064)
   const hwMonthly   = sumStudents * sumHw   * hwUnit;     // homework spend / month
   const liveMonthly = sumStudents * sumLive * liveUnit;   // live-lesson spend / month
   const monthly     = hwMonthly + liveMonthly;            // combined average cost / month
@@ -1175,7 +1177,7 @@ function render(){
       + `for the blended session at the current mix `
       + `(calculation ${s.charsCalc.toLocaleString("en-US")} · explanation ${s.charsExpl.toLocaleString("en-US")} chars/session, `
       + `measured across real homework sessions).`
-    : "Audio disabled — Inworld cost is $0.";
+    : "Audio disabled — Speechify cost is $0.";
 
   // service bars
   const order = ["o3","gpt","inworld","gemini","free"];
@@ -1204,7 +1206,7 @@ function render(){
   $("assumpRows").innerHTML = CALLS.map(c=>{
     const n = callCount(c, s);
     const mtag = c.model==="route"
-      ? `<span class="mtag o3">o3</span>/<span class="mtag gpt">4.1</span>`
+      ? `<span class="mtag o3">5-mini</span>/<span class="mtag gpt">4.1</span>`
       : `<span class="mtag gpt">4.1</span>`;
     const outTxt = (typeof c.out==="object") ? `${c.out.o3}/${c.out.gpt}` : c.out;
     return `<tr><td class="nm">${c.name}${c.retry?' <span style="color:var(--ink-faint)">×retry</span>':''}</td>
@@ -1227,7 +1229,7 @@ function render(){
 const DEFAULTS = {exUsersNum:200,exSpuNum:10,pctCalc:50,mixMode:false,inmethod:"image",
   pctText:60,pctImage:30,pctDoc:10,pctDiagram:50,
   avgSteps:5,retry:115,avgAtt:3,avgAsk:1,audioOn:true,charsCalc:4758,charsExpl:12611,
-  o3_in:2,o3_out:8,gpt_in:2,gpt_out:8,gem_img:0.05,tts_char:17};
+  o3_in:0.25,o3_out:2,gpt_in:2,gpt_out:8,gem_img:0.05,tts_char:8};
 
 // Write preset values into the controls (no render).
 function setPresetInputs(p){

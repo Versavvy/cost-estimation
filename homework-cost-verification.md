@@ -3,16 +3,20 @@
 > **Purpose.** This document lets us *confirm* the costs the estimator shows: the per-session cost of the
 > Homework Help (Tier 2) flow (Sections 1–7), and the one-off cost to build the whole KS3 + KS4 curriculum
 > (Section 8). It checks every provider unit price against live provider documentation, then shows exactly
-> how the biggest homework line — **TTS audio** — is counted on the **measured average** narration length,
+> how the largest variable line — **TTS audio** — is counted on the **measured average** narration length,
 > how image generation is costed at **one diagram per session** on the new **Gemini 3.1 Flash Image Light**
-> model, and explains the o3 reasoning-token risk.
+> model, and explains the GPT-5 mini reasoning-token line.
 >
-> **Bottom line up front:** the unit prices are *correct and current*. Audio is billed on the **MEASURED
-> AVERAGE** narration length (Section 2), route-specific — measured across real homework sessions rather than
-> the old conservative 24,000-char maximum. Homework prices carry a **+15% buffer** and Inworld is priced on
-> the **Developer plan ($17 / 1M characters)**. Image generation is a single diagram per session on the new
-> **Gemini 3.1 Flash Image Light (Nano-Banana-Light)** model at **$0.05/image** (Section 3), down from $0.10.
-> The figure to keep validating on a real invoice is o3's **hidden reasoning tokens** (Section 4.3).
+> **Bottom line up front:** the unit prices are *correct and current*. The calculation route now runs on
+> **GPT-5 mini ($0.25 / 1M input · $2.00 / 1M output)** instead of o3, cutting the reasoning line by ~76%; and
+> audio has moved from Inworld TTS-2 to **Speechify (Pro plan, $8 / 1M characters)**, roughly halving the voice
+> line. After both changes **no single provider dominates a session** — reasoning, image and audio are all in
+> the same range. Audio is billed on the **MEASURED AVERAGE** narration length (Section 2), route-specific —
+> measured across real homework sessions rather than the old conservative 24,000-char maximum. Homework prices
+> carry a **+15% buffer**. Image generation is a single diagram per session on the new **Gemini 3.1 Flash
+> Image Light (Nano-Banana-Light)** model at **$0.05/image** (Section 3), down from $0.10. The figures to keep
+> validating on a real invoice are the **audio character count** (Section 2) and that **Speechify matches the
+> SSML / per-word pronunciation control** the flow relies on — this swap is priced as a unit-price change only.
 
 ---
 
@@ -20,24 +24,28 @@
 
 | Service | Model | Published list price | In estimator | Confirmed |
 |---|---|---|---|---|
-| Reasoning LLM | **o3** | **$2.00 / 1M input · $8.00 / 1M output** | $2 / $8 | ✅ matches OpenAI |
+| Reasoning LLM | **GPT-5 mini** | **$0.25 / 1M input · $2.00 / 1M output** | $0.25 / $2 | ✅ matches OpenAI |
 | Prose / vision LLM | **gpt-4.1** | $2.00 / 1M input · $8.00 / 1M output | $2 / $8 | ✅ matches OpenAI |
 | Diagram image | **Gemini 3.1 Flash Image Light** (Nano-Banana-Light) | **$0.05 / image** | $0.05 | ✅ matches |
-| Text-to-speech | **Inworld TTS-2** | **$17.00 / 1M characters (Developer plan)** | $17 | ✅ matches Inworld |
+| Text-to-speech | **Speechify** | **$8.00 / 1M characters (Pro plan)** | $8 | ✅ matches Speechify |
 | Safety | omni-moderation | Free | $0 | ✅ |
+
+*The calculation route moved from **o3** ($2 / $8) to **GPT-5 mini** ($0.25 / $2) — 8× cheaper input, 4×
+cheaper output. Prose/explanation questions still run on gpt-4.1.*
 
 **The +15% safety buffer (homework).** Every homework price above is multiplied by **1.15** inside the
 estimator before any figure is shown, as an internal margin for retries, prompt drift and future price moves.
-So the effective rates the estimator charges against are: o3 / gpt-4.1 **$2.30 / $9.20** per 1M, Gemini
-**$0.0575** per image, Inworld **$19.55** per 1M characters. Throughout, we show **both** columns — *"list"*
+So the effective rates the estimator charges against are: GPT-5 mini **$0.2875 / $2.30** per 1M, gpt-4.1
+**$2.30 / $9.20** per 1M, Gemini **$0.0575** per image, Speechify **$9.20** per 1M characters. Throughout, we
+show **both** columns — *"list"*
 (the provider's published price, for reconciliation) and *"+15%"* (what the estimator displays). The one-off
 **curriculum build** (Section 8) is costed separately.
 
 ---
 
-## 2. Text-to-speech (Inworld TTS-2) — billed on the MEASURED AVERAGE narration length
+## 2. Text-to-speech (Speechify) — billed on the MEASURED AVERAGE narration length
 
-Inworld bills **per character** sent to synthesis. Earlier this document costed audio on a conservative
+Speechify bills **per character** sent to synthesis. Earlier this document costed audio on a conservative
 **24,000-char maximum**. We have since **measured** the characters the homework flow actually sends to TTS
 across real sessions (`homework_tts_char_count.py`, 6 sessions), and the estimator now costs audio on that
 **measured average** — and, crucially, **route-specific**: prose *explanation* sessions narrate 2–4× longer
@@ -45,24 +53,31 @@ than *calculation* sessions, so the blended figure follows the calculation / exp
 
 | Route (what the question needs) | Measured avg TTS chars / session | % of the 24,000 ceiling | n |
 |---|---|---|---|
-| **Calculation → o3** (Maths / Physics / Chemistry sums) | **4,758** | 20% | 3 |
+| **Calculation → GPT-5 mini** (Maths / Physics / Chemistry sums) | **4,758** | 20% | 3 |
 | **Explanation → gpt-4.1** (English, Biology prose) | **12,611** | 53% | 3 |
 | **Blended average (50/50 default)** | **8,685** | 36% | 6 |
 
-**Cost of the blended 8,685-char average:** list `8,685 ÷ 1,000,000 × $17` = **$0.1476** · +15% = **$0.1698**.
-Per route: calculation `4,758 × $17/1M` = **$0.0809** list / **$0.0930** (+15%); explanation
-`12,611 × $17/1M` = **$0.2144** list / **$0.2465** (+15%).
+**Cost of the blended 8,685-char average:** list `8,685 ÷ 1,000,000 × $8` = **$0.0695** · +15% = **$0.0799**.
+Per route: calculation `4,758 × $8/1M` = **$0.0381** list / **$0.0438** (+15%); explanation
+`12,611 × $8/1M` = **$0.1009** list / **$0.1160** (+15%).
 
-The 24,000-char maximum remains a safe worst-case bound, but the measured average is ~**2.8× lower**, so it
-is the realistic figure for a blended forecast. Inworld also gets cheaper with commitment, so a real audio
-invoice can only come in lower than the Developer-plan rate:
+This is roughly **half** the previous Inworld line (which was $0.148 blended on the $17 Developer plan). The
+24,000-char maximum remains a safe worst-case bound, but the measured average is ~**2.8× lower**, so it is
+the realistic figure for a blended forecast. Speechify gets cheaper as monthly character volume grows, so a
+real audio invoice can come in lower than the Pro-plan rate:
 
-| Inworld TTS-2 tier | $ / 1M characters | Cost of the 8,685-char avg session |
+| Speechify tier | $ / 1M characters | Cost of the 8,685-char avg session |
 |---|---|---|
-| On-demand | $25.00 | $0.217 |
-| **Developer (what we estimate on)** | **$17.00** | **$0.148** |
-| Higher commit | $12.50 | $0.109 |
-| Enterprise | $10.00 (as low as $5) | $0.087 (↓ $0.043) |
+| Starter | $10.00 | $0.087 |
+| **Pro (what we estimate on)** | **$8.00** | **$0.069** |
+| Scale | $6.00 | $0.052 |
+| Enterprise | Volume discount | lower |
+
+> **This swap is priced as a unit-price change only.** Homework audio was flipped to Inworld TTS-2
+> specifically for its SSML / intermediate-representation pipeline and per-word `/IPA/` pronunciation control
+> (equation read-out, phoneme overrides). Before treating the ~50% saving as real, confirm Speechify supports
+> the same SSML / phoneme control **and** how it counts characters for billing (whether SSML tags are charged),
+> since that changes the effective rate.
 
 ---
 
@@ -90,115 +105,132 @@ at **$0.05** — down from **$0.10** on the previous model:
 
 ---
 
-## 4. o3 reasoning model — tokens and cost
+## 4. GPT-5 mini reasoning model — tokens and cost
 
-o3 is only used for **calculation / derivation** questions (Maths, Physics, Chemistry, computational
+GPT-5 mini is only used for **calculation / derivation** questions (Maths, Physics, Chemistry, computational
 Science). Prose/explanation questions run on gpt-4.1. The build pipeline is five LLM calls (steps A ·
 parallel B · demo C · 3A explanation · answer key D); A→B→C can regenerate on a self-check failure, so
 they carry a retry factor (default **1.15×**).
 
-### 4.1 Per-call token assumptions (o3 route)
+The token counts below are **carried over unchanged from the previous o3 model** — output tokens are set to
+**include** hidden reasoning tokens (GPT-5 mini is a reasoning model too). We have no measured mini token
+sample yet, so holding o3's (near worst-case) counts keeps the estimate conservative; only the **rate**
+changes ($8 → $2 output). Re-tune once real mini sessions are billed — see Section 4.3.
 
-Output tokens below are set to **include** o3's hidden reasoning tokens — see Section 4.3.
+### 4.1 Per-call token assumptions (GPT-5 mini route)
 
-| Call | Input tok | o3 output tok | Runs / session | o3 cost (list) |
+| Call | Input tok | Output tok | Runs / session | mini cost (list) |
 |---|---|---|---|---|
-| A · Solution steps | 700 | 3,000 | 1.15 | $0.0292 |
-| B · Parallel question | 800 | 2,500 | 1.15 | $0.0248 |
-| C · Parallel demo (worked) | 900 | 3,000 | 1.15 | $0.0297 |
-| 3A · Explanation | 600 | 2,200 | 1.00 | $0.0188 |
-| D · Private answer key | 900 | 3,000 | 1.00 | $0.0258 |
-| Validate attempt | 700 | 1,500 | 3.00 | $0.0402 |
-| Follow-up Q&A | 800 | 1,500 | 1.00 | $0.0136 |
-| **o3 subtotal** | **~7,160** | **~20,975** | | **$0.1821** |
+| A · Solution steps | 700 | 3,000 | 1.15 | $0.0071 |
+| B · Parallel question | 800 | 2,500 | 1.15 | $0.0060 |
+| C · Parallel demo (worked) | 900 | 3,000 | 1.15 | $0.0072 |
+| 3A · Explanation | 600 | 2,200 | 1.00 | $0.0046 |
+| D · Private answer key | 900 | 3,000 | 1.00 | $0.0062 |
+| Validate attempt | 700 | 1,500 | 3.00 | $0.0095 |
+| Follow-up Q&A | 800 | 1,500 | 1.00 | $0.0032 |
+| **mini subtotal** | **~7,160** | **~20,975** | | **$0.0437** |
 
 Plus the fixed gpt-4.1 intake/classify calls that run in **every** session (image extract + analyze +
 match): **$0.0118**.
 
-### 4.2 Per-session o3 cost (the math)
+### 4.2 Per-session GPT-5 mini cost (the math)
 
 ```
-o3 input :  7,160 tok ÷ 1,000,000 × $2  = $0.0143
-o3 output: 20,975 tok ÷ 1,000,000 × $8  = $0.1678
-o3 total (list)                          = $0.1821  →  +15% = $0.2094
+mini input :  7,160 tok ÷ 1,000,000 × $0.25 = $0.0018
+mini output: 20,975 tok ÷ 1,000,000 × $2    = $0.0420
+mini total (list)                            = $0.0437  →  +15% = $0.0503
 ```
 
-### 4.3 Why o3 can look cheaper than the docs — hidden reasoning tokens
+For comparison, the same session on **o3** ($2 / $8) cost **$0.1821 list / $0.2094 buffered** — GPT-5 mini
+is **~76% cheaper** on the reasoning line.
 
-**The unit price is right ($2/$8); the risk is the token count, not the rate.** o3 bills *invisible*
-reasoning tokens at the **output** rate. OpenAI's documentation notes a single o3 answer can burn
-**5,000–20,000 internal reasoning tokens**. Our model already assumes ~21,000 o3 output tokens for a whole
-calculation session (near the high end), but if o3 reasons *harder*, cost scales. This table shows a full
-**calculation** session (o3 LLM + the fixed gpt-4.1 intake + the measured-average calc audio $0.081 + the
-one-image $0.05 line) as reasoning load rises:
+### 4.3 Reasoning-token variance — the same risk, 4× smaller
 
-| o3 reasoning load | o3 output tok / session | Calc session (list) | Calc session (+15%) |
+**The unit price is right ($0.25/$2); the residual risk is the token count.** Like o3, GPT-5 mini bills
+*invisible* reasoning tokens at the **output** rate, and a single reasoning answer can burn several thousand
+internal tokens. Our model already assumes ~21,000 output tokens for a whole calculation session (near the
+high end), but if mini reasons *harder*, cost scales. The crucial difference from o3: the output rate is now
+**$2, not $8**, so every extra reasoning token costs **4× less** — the same variance that added $0.42 on o3
+adds ~$0.10 on mini. This table shows a full **calculation** session (mini LLM + the fixed gpt-4.1 intake +
+the measured-average calc audio $0.038 on Speechify + the one-image $0.05 line) as reasoning load rises:
+
+| Reasoning load | Output tok / session | Calc session (list) | Calc session (+15%) |
 |---|---|---|---|
-| **As modelled** | ~21,000 | $0.325 | **$0.374** |
-| 1.5× harder | ~31,500 | $0.409 | $0.470 |
-| 2× harder | ~42,000 | $0.493 | $0.567 |
-| 3× harder | ~63,000 | $0.661 | $0.760 |
+| **As modelled** | ~21,000 | $0.144 | **$0.165** |
+| 1.5× harder | ~31,500 | $0.165 | $0.189 |
+| 2× harder | ~42,000 | $0.186 | $0.214 |
+| 3× harder | ~63,000 | $0.228 | $0.262 |
 
-> The o3 output-token counts are **editable** in the estimator's *Advanced assumptions* — tune them to a
-> sample of real billed sessions and the estimate tracks reality.
+> The output-token counts are **editable** in the estimator's *Advanced assumptions* — tune them to a
+> sample of real billed sessions and the estimate tracks reality. Because mini's output rate is 4× lower than
+> o3's, the whole reasoning line — and its sensitivity to reasoning depth — is now a minor part of a session.
 
 ---
 
 ## 5. Full homework-session confirmation table
 
 Per-session cost by service, with **audio at the measured average** (route-specific) and **one real-time
-image**. **Calculation** sessions use o3; **explanation** sessions use gpt-4.1; the **blended** row is the
-estimator default (50/50, image intake, audio on).
+image**. **Calculation** sessions use GPT-5 mini; **explanation** sessions use gpt-4.1; the **blended** row is
+the estimator default (50/50, image intake, audio on).
 
-| Session type | o3 | gpt-4.1 | Gemini image (×1) | Inworld audio (avg) | **Total (list)** | **Total (+15%)** |
+| Session type | GPT-5 mini | gpt-4.1 | Gemini image (×1) | Speechify audio (avg) | **Total (list)** | **Total (+15%)** |
 |---|---|---|---|---|---|---|
-| Calculation (o3) | $0.182 | $0.012 | $0.050 | $0.081 | **$0.325** | **$0.374** |
-| Explanation (gpt-4.1) | — | $0.070 | $0.050 | $0.214 | **$0.334** | **$0.384** |
-| **Blended (default)** | $0.091 | $0.041 | $0.050 | $0.148 | **$0.330** | **$0.379** |
+| Calculation (mini) | $0.044 | $0.012 | $0.050 | $0.038 | **$0.144** | **$0.165** |
+| Explanation (gpt-4.1) | — | $0.070 | $0.050 | $0.101 | **$0.221** | **$0.254** |
+| **Blended (default)** | $0.022 | $0.041 | $0.050 | $0.069 | **$0.182** | **$0.210** |
 
 Every number is reproducible from Sections 2–4 with the published unit prices — that is the confirmation:
-**provider price × quantity = the estimator's figure.** Audio is now a measured line (~35–55% of a session
-depending on route), not a worst-case ceiling; the single image line is minor.
+**provider price × quantity = the estimator's figure.** With reasoning on GPT-5 mini and audio on Speechify,
+**no single line dominates** — audio is ~26–46% of a session depending on route, the one image is a similar
+share of a calculation session (~35%), and the reasoning line is small. Audio is a measured line, not a
+worst-case ceiling.
 
 ---
 
 ## 6. Scaling to volume (monthly / yearly)
 
-Using the **blended buffered** cost of **$0.379** per session, scaled by each preset's monthly session
-count (the *range* uses the calculation-only and explanation-only bounds, $0.374 → $0.384):
+Using the **blended buffered** cost of **$0.210** per session, scaled by each preset's monthly session
+count (the *range* uses the calculation-only and explanation-only bounds, $0.165 → $0.254):
 
 | Preset | Students × questions | Sessions / month | Monthly (blended) | Yearly (blended) | Monthly range |
 |---|---|---|---|---|---|
-| **Reset to defaults** | 200 × 10 | 2,000 | **$758** | **$9,096** | $748 – $768 |
-| **Light usage** | 300 × 20 | 6,000 | **$2,274** | **$27,288** | $2,244 – $2,304 |
-| **Heavy usage** | 600 × 40 | 24,000 | **$9,096** | **$109,152** | $8,976 – $9,216 |
+| **Reset to defaults** | 200 × 10 | 2,000 | **$420** | **$5,040** | $330 – $508 |
+| **Light usage** | 300 × 20 | 6,000 | **$1,260** | **$15,120** | $990 – $1,524 |
+| **Heavy usage** | 600 × 40 | 24,000 | **$5,040** | **$60,480** | $3,960 – $6,096 |
 
-*Monthly figures use the blended-default per-session cost. The two levers that move these most: the
-**explanation / calculation mix** (prose sessions narrate 2–4× more audio) and the **o3 reasoning-token
-count** (Section 4.3). The Inworld **commitment tier** lowers audio further ($17 Developer → $12.50 higher
-commit → $10 enterprise).*
+*Monthly figures use the blended-default per-session cost. With reasoning on GPT-5 mini and audio on
+Speechify, the biggest lever is still the **explanation / calculation mix** (prose sessions narrate 2–4× more
+audio); the **mini reasoning-token count** (Section 4.3) is a minor lever. Speechify's **plan tier** lowers
+audio further ($10 Starter → $8 Pro → $6 Scale → enterprise volume discount).*
 
 ---
 
 ## 7. Reconciliation summary (homework)
 
-1. **Unit prices are correct and current** (verified July 2026) — o3 & gpt-4.1 at $2/$8 per 1M tokens,
-   Gemini 3.1 Flash Image Light at $0.05/image, Inworld TTS-2 at **$17 per 1M characters (Developer plan)**.
-2. **Audio is now a measured-average line, route-specific** — calculation ~4,758 chars, explanation
-   ~12,611 chars, blended ~8,685 chars ≈ $0.148 list / $0.170 buffered — measured across 6 real sessions,
-   replacing the old 24,000-char maximum (which remains a safe worst-case bound, ~2.8× higher).
-3. **Image generation is a single diagram per session** — one **Gemini 3.1 Flash Image Light
+1. **Unit prices are correct and current** (verified July 2026) — GPT-5 mini at **$0.25/$2** per 1M tokens
+   (calculation route, down from o3's $2/$8), gpt-4.1 at $2/$8 per 1M tokens (explanation route), Gemini 3.1
+   Flash Image Light at $0.05/image, Speechify at **$8 per 1M characters (Pro plan)**, down from Inworld's $17.
+2. **Reasoning moved to GPT-5 mini and audio to Speechify** — the calculation route now costs ~$0.044 list /
+   $0.050 buffered per session (~76% below o3), and audio roughly halved; after both changes no single line
+   dominates a session.
+3. **Audio is now a measured-average line, route-specific** — calculation ~4,758 chars, explanation
+   ~12,611 chars, blended ~8,685 chars ≈ $0.069 list / $0.080 buffered on Speechify Pro ($8) — measured across
+   6 real sessions, replacing the old 24,000-char maximum (which remains a safe worst-case bound, ~2.8× higher).
+4. **Image generation is a single diagram per session** — one **Gemini 3.1 Flash Image Light
    (Nano-Banana-Light)** image at **$0.05 list / $0.0575 buffered**, down from $0.10, a minor line that no
    longer scales with walkthrough depth.
-4. **Homework carries a +15% buffer**, so the estimate stays deliberately conservative.
-5. **Validate two things on real usage:** (a) the **average narrated characters** per session vs. the
-   measured 4,758 / 12,611 / 8,685 figures — the dominant line; and (b) o3's reasoning-token count
-   (Section 4.3).
+5. **Homework carries a +15% buffer**, so the estimate stays deliberately conservative.
+6. **Validate three things on real usage:** (a) the **average narrated characters** per session vs. the
+   measured 4,758 / 12,611 / 8,685 figures — still a major line; (b) GPT-5 mini's reasoning-token count
+   (Section 4.3), a minor line since output bills at $2; and (c) that **Speechify matches the SSML / per-word
+   pronunciation control** the flow relies on — the swap is priced as a unit-price change only.
 
 ### Recommended checks before committing to a budget
 - Confirm the **average narrated characters** per session (per route) against a larger sample than 6.
-- Pull the **actual o3 output-token count** from a dozen real calculation sessions vs. ~21,000/session.
-- Decide the Inworld **commitment tier** (Developer $17 → higher commit $12.50 → enterprise $10).
+- Pull the **actual GPT-5 mini output-token count** from a dozen real calculation sessions vs. ~21,000/session
+  (carried over from o3; likely lower, and cheaper at $2/1M either way).
+- Confirm **Speechify feature parity** (SSML / phoneme control) and how it counts characters for billing, then
+  decide the **plan tier** (Starter $10 → Pro $8 → Scale $6 → enterprise volume discount).
 
 ---
 
@@ -319,13 +351,18 @@ Prompt sizes are measured from the actual prompt builders, including the backend
 added to every call. Narration audio is pre-generated and cached, so the voice line covers only text composed
 live — the question, the feedback, and any re-explanation.
 
-| Scenario | Live calls | Tokens in | Tokens out | LLM (gpt-4.1) | Voice chars | Voice (Inworld) | **Total / student** |
+| Scenario | Live calls | Tokens in | Tokens out | LLM (GPT-5 mini) | Voice chars | Voice (Speechify) | **Total / student** |
 |---|---|---|---|---|---|---|---|
-| Every check-in correct | 16 | 13,662 | 800 | $0.039 | 3,200 | $0.063 | **$0.10** |
-| **Half wrong — planning case** | **20** | **18,371** | **1,500** | **$0.056** | **6,000** | **$0.117** | **≈ $0.17** |
-| Every check-in wrong | 24 | 23,080 | 2,200 | $0.073 | 8,800 | $0.172 | **$0.25** |
+| Every check-in correct | 16 | 13,662 | 800 | $0.006 | 3,200 | $0.029 | **$0.035** |
+| **Half wrong — planning case** | **20** | **18,371** | **1,500** | **$0.009** | **6,000** | **$0.055** | **≈ $0.064** |
+| Every check-in wrong | 24 | 23,080 | 2,200 | $0.012 | 8,800 | $0.081 | **$0.093** |
 
-**Budget on $0.17 per student per lesson; size headroom for $0.25.**
+**Budget on ~$0.06 per student per lesson; size headroom for ~$0.09.**
+
+*The live-lesson section now uses the same providers as the homework flow: **content on GPT-5 mini ($0.25/$2)**
+and **voice on Speechify Pro ($8/1M)**, replacing gpt-4.1 + Inworld. That drops the planning case from $0.17 to
+**~$0.064** — roughly 60% lower — because the voice line more than halves and the check-in LLM calls, being
+short and output-light, cost almost nothing on mini.*
 
 This supersedes the previous flat estimate of ~25 calls / ~12,600 voice characters / $0.41. That figure was a
 single measured session with no structural derivation, and it double-counted the pre-generated narration as a
@@ -334,10 +371,14 @@ live voice cost.
 ---
 
 ### Sources
-- OpenAI o3 API pricing ($2 / $8 per 1M tokens; hidden reasoning tokens billed at output rate):
-  <https://developers.openai.com/api/docs/pricing> · <https://pricepertoken.com/pricing-page/model/openai-o3>
-- Inworld TTS-2 pricing (Developer plan $17 / 1M characters; on-demand $25, tiered to $10 enterprise):
-  <https://inworld.ai/pricing> · <https://www.buildmvpfast.com/api-costs/ai-voice>
+- OpenAI GPT-5 mini API pricing ($0.25 / $2 per 1M tokens; hidden reasoning tokens billed at output rate):
+  <https://developers.openai.com/api/docs/pricing> · <https://pricepertoken.com/pricing-page/model/openai-gpt-5-mini>
+- OpenAI o3 API pricing ($2 / $8 per 1M tokens — previous calculation-route model, for reference):
+  <https://pricepertoken.com/pricing-page/model/openai-o3>
+- Speechify TTS API pricing (Pro plan $8 / 1M characters; Starter $10, Scale $6, enterprise volume discount):
+  <https://speechify.ai/pricing> · <https://speechify.com/blog/best-text-to-speech-api-voice-quality-price/>
+- Inworld TTS-2 pricing (Developer plan $17 / 1M characters — previous voice provider for both homework and
+  live lessons, now fully replaced by Speechify): <https://inworld.ai/pricing> · <https://www.buildmvpfast.com/api-costs/ai-voice>
 - Measured TTS characters: `homework_tts_summary.pdf` / `homework_tts_char_count.py` (6 sessions, 2026-07-10).
 - Curriculum build figures: `General Cost Estimation Document (Updated).pdf` (per-lesson gpt-4.1 with the new
   image model), reconciled against `General Cost Estimation Document.pdf` (previous image model).
